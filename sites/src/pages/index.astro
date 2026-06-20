@@ -1,7 +1,21 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { projects } from '../lib/projects';
+import { getHubBaseUrl, getProjectBaseUrl } from '../lib/siteTarget';
+
+const canonicalUrl = `${getHubBaseUrl()}/`;
 ---
-<html lang="es">
-  <body>
-    <h1>Auto Citaciones</h1>
-  </body>
-</html>
+<BaseLayout
+  title="Easyleads — Directorio de proyectos"
+  description="Directorio de negocios y proyectos gestionados por Easyleads."
+  canonicalUrl={canonicalUrl}
+>
+  <h1>Proyectos</h1>
+  <ul>
+    {projects.map((project) => (
+      <li>
+        <a href={`${getProjectBaseUrl(project.slug)}/`}>{project.name}</a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
