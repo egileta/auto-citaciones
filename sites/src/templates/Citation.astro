@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { buildLocalBusinessJsonLd } from '../lib/jsonld';
+import type { Project } from '../lib/projects';
+
+interface Props {
+  project: Project;
+  canonicalUrl: string;
+}
+
+const { project, canonicalUrl } = Astro.props;
+const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
+---
+<BaseLayout
+  title={`${project.name} — Información y contacto`}
+  description={project.description}
+  canonicalUrl={canonicalUrl}
+  jsonLd={jsonLd}
+>
+  <h1>{project.name}</h1>
+  <p>{project.description}</p>
+  <address>
+    {project.nap.streetAddress}<br />
+    {project.nap.postalCode} {project.nap.addressLocality}<br />
+    Tel: {project.nap.telephone}
+  </address>
+  <ul>
+    {project.sameAs.map((url) => (
+      <li><a href={url} rel="me">{url}</a></li>
+    ))}
+  </ul>
+</BaseLayout>
