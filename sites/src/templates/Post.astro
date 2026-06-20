@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { LoadedPost } from '../lib/posts';
+
+interface Props {
+  post: LoadedPost;
+  canonicalUrl: string;
+  citationUrl: string;
+  html: string;
+}
+
+const { post, canonicalUrl, citationUrl, html } = Astro.props;
+---
+<BaseLayout
+  title={post.frontmatter.title}
+  description={post.frontmatter.title}
+  canonicalUrl={canonicalUrl}
+>
+  <article>
+    <h1>{post.frontmatter.title}</h1>
+    <time datetime={post.frontmatter.date}>{post.frontmatter.date}</time>
+    <div set:html={html} />
+    <p><a href={citationUrl}>Volver a la página de {post.frontmatter.project}</a></p>
+  </article>
+</BaseLayout>

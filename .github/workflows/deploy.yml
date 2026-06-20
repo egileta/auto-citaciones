@@ -1,0 +1,114 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/validate_projects.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: sites
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: cloudflare
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: github
+
+  deploy-cloudflare:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: sites
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: cloudflare
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+      - uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+          directory: sites/dist
+
+  deploy-github:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: sites
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: github
+      - run: echo "gh.easyleads.es" > sites/dist/CNAME
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sites/dist
+      - uses: actions/deploy-pages@v4
+
+  blogger-publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/blogger_publish.py
+        env:
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          BLOGGER_OAUTH_CLIENT_ID: ${{ secrets.BLOGGER_OAUTH_CLIENT_ID }}
+          BLOGGER_OAUTH_CLIENT_SECRET: ${{ secrets.BLOGGER_OAUTH_CLIENT_SECRET }}
+          BLOGGER_REFRESH_TOKEN: ${{ secrets.BLOGGER_REFRESH_TOKEN }}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update blogger_published.json"
+          file_pattern: data/blogger_published.json
+
+  submit-indexnow:
+    needs: [deploy-cloudflare, deploy-github, blogger-publish]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - run: |
+          python scripts/submit_indexnow.py \
+            https://easyleads.es/ \
+            https://easyseo.easyleads.es/ \
+            https://newcom.easyleads.es/ \
+            https://arroba.easyleads.es/ \
+            https://gh.easyleads.es/
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
