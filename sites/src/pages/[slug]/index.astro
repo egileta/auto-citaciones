@@ -1,0 +1,14 @@
+---
+import Citation from '../../templates/Citation.astro';
+import { projects, getAllSlugs } from '../../lib/projects';
+import { getProjectBaseUrl } from '../../lib/siteTarget';
+
+export function getStaticPaths() {
+  return getAllSlugs().map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const project = projects.find((p) => p.slug === slug)!;
+const canonicalUrl = `${getProjectBaseUrl(project.slug)}/`;
+---
+<Citation project={project} canonicalUrl={canonicalUrl} />
