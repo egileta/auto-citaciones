@@ -1,0 +1,61 @@
+[
+  {
+    "slug": "easyseo",
+    "subdomain": "easyseo.easyleads.es",
+    "name": "Easy SEO",
+    "description": "Servicios de agencia SEO especializados en captación de leads cualificados y rediseño web para potenciar el SEO local de tus principales servicios.",
+    "nap": {
+      "streetAddress": "C. Jenaro Oraá Kalea, 3BIS, 2ºC",
+      "addressLocality": "Santurtzi",
+      "postalCode": "48980",
+      "addressCountry": "ES",
+      "telephone": "+34 695 50 19 79"
+    },
+    "sameAs": [
+      "https://www.facebook.com/EasySEOvizcaya",
+      "https://www.linkedin.com/company/easy-seo-vizcaya",
+      "https://x.com/EasySEO_es",
+      "https://sites.google.com/view/agencia-seo-local-vizcaya",
+      "https://www.cylex.es/santurtzi/easy-seo-disseny-web-santurtzi-14083038.html",
+      "https://firmania.es/santurtzi/easy-seo-disseny-web-santurtzi-2389536",
+      "https://www.paginasamarillas.es/f/santurtzi/easy-seo-agencia-de-marketing-en-santurce_234650026_000000001.html",
+      "https://es.trustpilot.com/review/easyseo.es",
+      "https://linktr.ee/easy_seo_local_vizcaya"
+    ]
+  },
+  {
+    "slug": "newcom",
+    "subdomain": "newcom.easyleads.es",
+    "name": "Newcom Bilbao",
+    "description": "Reparación de ordenadores, venta de PCs y portátiles nuevos y reacondicionados. Compra venta de juegos y videoconsolas, venta de merchandising gamer y friki.",
+    "nap": {
+      "streetAddress": "Trauko Kalea, 24, Uribarri",
+      "addressLocality": "Bilbao",
+      "postalCode": "48007",
+      "addressCountry": "ES",
+      "telephone": "+34 944 46 65 98"
+    },
+    "sameAs": [
+      "https://www.facebook.com/newcom.bilbao",
+      "https://www.instagram.com/newcom.bilbao/",
+      "https://www.youtube.com/@newcombilbao"
+    ]
+  },
+  {
+    "slug": "arroba",
+    "subdomain": "arroba.easyleads.es",
+    "name": "Arroba PC",
+    "description": "Informática y electrónica en el centro de Santurtzi junto al metro. Venta, reparación y asesoramiento en ordenadores, móviles y consolas. ¡Visítanos!",
+    "nap": {
+      "streetAddress": "Juan XXIII Kalea, 5",
+      "addressLocality": "Santurtzi",
+      "postalCode": "48980",
+      "addressCountry": "ES",
+      "telephone": "+34 946 12 94 27"
+    },
+    "sameAs": [
+      "https://www.facebook.com/PCSanturtzi",
+      "https://www.instagram.com/arrobapcsanturtzi"
+    ]
+  }
+]
