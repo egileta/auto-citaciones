@@ -6,18 +6,20 @@ jobs:
   list:
     runs-on: ubuntu-latest
     steps:
-      - name: List posts
+      - name: Delete duplicate posts
         env:
-          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
           BLOGGER_OAUTH_CLIENT_ID: ${{ secrets.BLOGGER_OAUTH_CLIENT_ID }}
           BLOGGER_OAUTH_CLIENT_SECRET: ${{ secrets.BLOGGER_OAUTH_CLIENT_SECRET }}
           BLOGGER_REFRESH_TOKEN: ${{ secrets.BLOGGER_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
         run: |
           ACCESS_TOKEN=$(curl -s -X POST https://oauth2.googleapis.com/token \
             -d client_id="$BLOGGER_OAUTH_CLIENT_ID" \
             -d client_secret="$BLOGGER_OAUTH_CLIENT_SECRET" \
             -d refresh_token="$BLOGGER_REFRESH_TOKEN" \
             -d grant_type=refresh_token | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
-          curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
-            "https://www.googleapis.com/blogger/v3/blogs/$BLOGGER_BLOG_ID/posts?fetchBodies=false&maxResults=50" \
-            | python3 -m json.tool
+          for id in 6725270745411968052 3753592392518634234 2332013175105014629; do
+            echo "Deleting $id"
+            curl -s -X DELETE -w "\nHTTP:%{http_code}\n" -H "Authorization: Bearer $ACCESS_TOKEN" \
+              "https://www.googleapis.com/blogger/v3/blogs/$BLOGGER_BLOG_ID/posts/$id"
+          done
