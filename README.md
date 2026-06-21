@@ -13,7 +13,9 @@ Los tres canales reciben **contenido distinto por proyecto y por canal**
 contenido duplicado entre subdominios y penalizaciones SEO.
 
 Documentación completa de la infraestructura y cómo reproducirla:
-[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Para arrancar el proyecto en un
+equipo nuevo (stack local, credenciales), ver
+[`docs/SETUP.md`](docs/SETUP.md).
 
 ## Estructura
 
