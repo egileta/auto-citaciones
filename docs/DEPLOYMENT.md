@@ -14,15 +14,37 @@ dos veces por despliegue, una por `SITE_TARGET`:
   distintos** (`easyseo.easyleads.es`, `newcom.easyleads.es`,
   `arroba.easyleads.es`) desde el **mismo** proyecto de Cloudflare Pages.
   Como el build es idéntico para los tres dominios, una **Cloudflare Pages
-  Function** (`sites/functions/_middleware.ts`) inspecciona el header
-  `Host` en cada petición y reescribe `/` → `/<slug>/` para servir el
-  contenido del proyecto correcto. Sin esa función, los tres subdominios
-  muestran siempre la página "hub" con la lista de los 3 proyectos.
+  Function** (`sites/functions/_middleware.ts`, lógica pura en
+  `sites/src/lib/rewriteHost.ts`) inspecciona el header `Host` en cada
+  petición y reescribe `/` → `/<slug>/` para servir el contenido del
+  proyecto correcto. Sin esa función, los tres subdominios muestran
+  siempre la página "hub" con la lista de los 3 proyectos. Si la petición
+  llega ya con el path interno con prefijo (p.ej.
+  `easyseo.easyleads.es/easyseo/01-post/`, una fuga típica si alguien
+  enlaza directamente al path físico del build), la Function responde con
+  un **redirect 301** a la versión limpia (`/01-post/`) en vez de
+  reescribir/pasar el contenido — evita servir la misma página en dos URLs
+  (contenido duplicado).
 - `SITE_TARGET=github` → un build con rutas `/`, `/easyseo/`, `/newcom/`,
-  `/arroba/`, servido en GitHub Pages bajo el dominio propio
-  `gh.easyleads.es`.
+  `/arroba/` y posts en `/<slug>/<post>/` (sin segmento `/blog/`), servido
+  en GitHub Pages bajo el dominio propio `gh.easyleads.es`.
 - **Blogger**: no usa el build de Astro. `scripts/blogger_publish.py` lee
   directamente los `*/*/blogger.md` y los publica vía API.
+
+**URLs de posts:** en los tres canales un post vive en
+`<base>/<post-slug>/` (p.ej. `https://easyseo.easyleads.es/01-post/`,
+`https://gh.easyleads.es/easyseo/01-post/`) — sin `/blog/` ni doble
+prefijo del slug del proyecto.
+
+**Rueda de enlaces (link wheel):** cada post, en los tres canales, incluye
+tras su contenido los datos NAP+W del negocio y enlaces a las versiones del
+mismo post en los otros canales (`sites/src/lib/linkWheel.ts` para
+Cloudflare/GitHub vía `Post.astro`; `build_nap_html`/`build_link_wheel_html`
+en `scripts/blogger_publish.py` para Blogger). El enlace a la versión de
+Blogger solo aparece una vez que el post ya se publicó allí y quedó
+registrado en `data/blogger_published.json` (`sites/src/lib/blogPublished.ts`
+lee ese mismo fichero en tiempo de build) — en el primer despliegue de un
+post nuevo, ese enlace concreto aparecerá a partir del segundo build.
 
 Cada post tiene **tres ficheros markdown distintos**
 (`cloudflare.md`, `github.md`, `blogger.md`) con redacción diferente para
@@ -249,12 +271,26 @@ markdown anidado — si se necesita más, ampliar `inline_markdown_to_html`.
 
 ## 4. Convención de contenido (los 3 canales)
 
-- `sites/src/data/projects.json` — cada proyecto necesita `nap` (dirección
-  completa + teléfono) **y** `website` (dominio real del negocio). El
-  JSON-LD (`LocalBusiness.url`) y el enlace visible en `Citation.astro`
-  usan `project.website`, nunca el subdominio de easyleads.es.
+- `sites/src/data/projects.json` — cada proyecto necesita `slug`,
+  `subdomain`, `website` (dominio real del negocio), `name` (razón social
+  exacta del negocio — es el dato "N" del NAP, debe coincidir con la que
+  usa el negocio en Google Business Profile y demás directorios),
+  `tagline`, `description`, `nap` (dirección completa + teléfono) y
+  `sameAs`. `validate_projects.py` exige todos estos campos. El JSON-LD
+  (`LocalBusiness.url`) y el enlace visible en `Citation.astro` usan
+  `project.website`, nunca el subdominio de easyleads.es.
+- `Citation.astro` (página raíz de cada subdominio) sigue esta estructura
+  fija: h1 = `name`, h2 = `tagline`, párrafo = `description`, h3 "Últimas
+  entradas en nuestro blog" + lista de enlaces a posts (de este proyecto y
+  de los otros, para indexabilidad cruzada), y **después** h3 "Nuestros
+  perfiles en directorios especializados y redes sociales" + lista de
+  `sameAs`. El orden importa: los enlaces a blog van antes que los
+  perfiles.
 - Cada post (`sites/src/content/posts/<slug>/<post>/{cloudflare,github,blogger}.md`)
-  debe enlazar, en su CTA final, al `website` real del proyecto.
+  debe enlazar, en su CTA final, al `website` real del proyecto. El NAP+W
+  y la rueda de enlaces a los otros canales/posts se añaden
+  automáticamente al renderizar (ver sección de arquitectura arriba) — no
+  hace falta escribirlos a mano en el markdown.
 
 ## 5. Verificación end-to-end tras cualquier cambio
 
