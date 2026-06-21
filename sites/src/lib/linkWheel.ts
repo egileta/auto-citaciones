@@ -34,3 +34,43 @@ export function buildPostLinkWheel(
 
   return entries;
 }
+
+const CHANNEL_SHORT_LABEL: Record<SiteTarget | 'blogger', string> = {
+  cloudflare: 'Cloudflare Pages',
+  github: 'GitHub Pages',
+  blogger: 'Blogger',
+};
+
+export interface ChannelLink {
+  channel: SiteTarget | 'blogger';
+  channelLabel: string;
+  url: string;
+}
+
+/**
+ * All channel variants of a single post belonging to one project, used by
+ * the citation root page where each owned post fans out into one entry per
+ * channel (own subdomain + the other 2), instead of one entry per post.
+ */
+export function buildAllChannelLinks(
+  projectSlug: string,
+  postSlug: string,
+  published: Record<string, BloggerPublishedEntry> = bloggerPublished
+): ChannelLink[] {
+  const entries: ChannelLink[] = (['cloudflare', 'github'] as SiteTarget[]).map((target) => ({
+    channel: target,
+    channelLabel: CHANNEL_SHORT_LABEL[target],
+    url: `${getProjectBaseUrl(projectSlug, target)}/${postSlug}/`,
+  }));
+
+  const bloggerEntry = published[`${projectSlug}/${postSlug}`];
+  if (bloggerEntry) {
+    entries.push({
+      channel: 'blogger',
+      channelLabel: CHANNEL_SHORT_LABEL.blogger,
+      url: bloggerEntry.blogger_post_url,
+    });
+  }
+
+  return entries;
+}
