@@ -19,11 +19,6 @@ const posts = loadPostsForTarget(modules, target)
   .filter((post) => post.projectSlug === slug)
   .sort((a, b) => b.frontmatter.date.localeCompare(a.frontmatter.date));
 
-const blogLinks = posts.flatMap((post) =>
-  buildAllChannelLinks(post.projectSlug, post.postSlug).map((link) => ({
-    title: `${post.frontmatter.title} (${link.channelLabel})`,
-    url: link.url,
-  }))
-);
+const blogLinks = posts.flatMap((post) => buildAllChannelLinks(modules, post.projectSlug, post.postSlug));
 ---
 <Citation project={project} canonicalUrl={canonicalUrl} blogLinks={blogLinks} />

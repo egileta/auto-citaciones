@@ -1,5 +1,5 @@
 ---
-title: "Cómo elegir una agencia SEO local en Santurtzi"
+title: "Por qué tu negocio no aparece en Google cuando alguien te busca cerca"
 date: "2026-06-20"
 project: "easyseo"
 ---

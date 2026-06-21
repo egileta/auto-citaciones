@@ -1,5 +1,5 @@
 ---
-title: "Qué revisar antes de comprar un PC reacondicionado"
+title: "Lo que no se ve a simple vista en un PC reacondicionado"
 date: "2026-06-20"
 project: "arroba"
 ---

@@ -1,5 +1,5 @@
 ---
-title: "Cuándo merece la pena reparar tu ordenador en vez de comprar uno nuevo"
+title: "Las dos averías que explican casi todos los ordenadores lentos"
 date: "2026-06-20"
 project: "newcom"
 ---

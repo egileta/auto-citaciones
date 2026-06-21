@@ -1,5 +1,5 @@
 ---
-title: "Cuándo merece la pena reparar tu ordenador en vez de comprar uno nuevo"
+title: "¿Reparar o comprar otro? Esto es lo primero que hay que mirar"
 date: "2026-06-20"
 project: "newcom"
 ---

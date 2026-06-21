@@ -2,6 +2,7 @@
 import Post from '../../../templates/Post.astro';
 import { loadPostsForTarget, type PostModule, type LoadedPost } from '../../../lib/posts';
 import { getSiteTarget, getProjectBaseUrl } from '../../../lib/siteTarget';
+import { buildPostLinkWheel } from '../../../lib/linkWheel';
 
 export async function getStaticPaths() {
   const modules = import.meta.glob<PostModule>('../../../content/posts/**/*.md', { eager: true });
@@ -13,9 +14,11 @@ export async function getStaticPaths() {
   }));
 }
 
+const modules = import.meta.glob<PostModule>('../../../content/posts/**/*.md', { eager: true });
 const { post } = Astro.props as { post: LoadedPost };
 const html = await post.module.compiledContent();
 const canonicalUrl = `${getProjectBaseUrl(post.projectSlug)}/${post.postSlug}/`;
 const citationUrl = `${getProjectBaseUrl(post.projectSlug)}/`;
+const linkWheel = buildPostLinkWheel(modules, post.projectSlug, post.postSlug, getSiteTarget());
 ---
-<Post post={post} canonicalUrl={canonicalUrl} citationUrl={citationUrl} html={html} />
+<Post post={post} canonicalUrl={canonicalUrl} citationUrl={citationUrl} html={html} linkWheel={linkWheel} />

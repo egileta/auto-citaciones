@@ -1,7 +1,16 @@
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from blogger_publish import parse_frontmatter, markdown_to_html, publish_posts
+import blogger_publish
+from blogger_publish import (
+    build_link_wheel_html,
+    markdown_to_html,
+    parse_frontmatter,
+    publish_posts,
+    read_channel_title,
+)
 
 
 class ParseFrontmatterTest(unittest.TestCase):
@@ -35,6 +44,40 @@ class MarkdownToHtmlTest(unittest.TestCase):
     def test_list_item_wrapped_across_lines_is_folded_into_one_item(self):
         html = markdown_to_html("- Uno que\n  sigue en la siguiente línea\n- Dos")
         self.assertEqual(html, "<ul><li>Uno que sigue en la siguiente línea</li><li>Dos</li></ul>")
+
+
+class LinkWheelTest(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+        post_dir = Path(self.tmpdir.name) / "easyseo" / "01-tema"
+        post_dir.mkdir(parents=True)
+        (post_dir / "cloudflare.md").write_text(
+            '---\ntitle: "Título en Cloudflare"\ndate: "2026-01-01"\nproject: "easyseo"\n---\nCF\n',
+            encoding="utf-8",
+        )
+        (post_dir / "github.md").write_text(
+            '---\ntitle: "Título en GitHub"\ndate: "2026-01-01"\nproject: "easyseo"\n---\nGH\n',
+            encoding="utf-8",
+        )
+        patcher = patch.object(blogger_publish, "POSTS_ROOT", Path(self.tmpdir.name))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self.tmpdir.cleanup)
+
+    def test_read_channel_title_returns_the_sibling_files_title(self):
+        self.assertEqual(read_channel_title("easyseo", "01-tema", "cloudflare"), "Título en Cloudflare")
+        self.assertEqual(read_channel_title("easyseo", "01-tema", "github"), "Título en GitHub")
+
+    def test_read_channel_title_returns_none_when_missing(self):
+        self.assertIsNone(read_channel_title("easyseo", "01-tema", "blogger"))
+
+    def test_link_wheel_uses_each_channels_own_title_as_anchor_text(self):
+        html = build_link_wheel_html("easyseo", "01-tema")
+        self.assertEqual(
+            html,
+            '<ul><li><a href="https://easyseo.easyleads.es/01-tema/">Título en Cloudflare</a></li>'
+            '<li><a href="https://gh.easyleads.es/easyseo/01-tema/">Título en GitHub</a></li></ul>',
+        )
 
 
 class PublishPostsTest(unittest.TestCase):

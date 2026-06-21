@@ -1,57 +1,51 @@
 import { describe, it, expect } from 'vitest';
 import { buildPostLinkWheel, buildAllChannelLinks } from '../src/lib/linkWheel';
 
+const MODULES = {
+  '/x/content/posts/easyseo/01-tema/cloudflare.md': {
+    frontmatter: { title: 'Tema CF', date: '2026-01-01', project: 'easyseo' },
+    compiledContent: async () => '<p>cf</p>',
+  },
+  '/x/content/posts/easyseo/01-tema/github.md': {
+    frontmatter: { title: 'Tema GH', date: '2026-01-01', project: 'easyseo' },
+    compiledContent: async () => '<p>gh</p>',
+  },
+  '/x/content/posts/easyseo/01-tema/blogger.md': {
+    frontmatter: { title: 'Tema BG', date: '2026-01-01', project: 'easyseo' },
+    compiledContent: async () => '<p>bg</p>',
+  },
+};
+
+const PUBLISHED = {
+  'easyseo/01-tema': {
+    blogger_post_url: 'https://blogger.easyleads.es/2026/01/tema.html',
+    blogger_post_id: '1',
+    content_hash: 'h',
+  },
+};
+
 describe('buildPostLinkWheel', () => {
-  it('links to the other channels but not the current one', () => {
-    const entries = buildPostLinkWheel('easyseo', '01-tema', 'cloudflare', {});
+  it('excludes the current target and uses each channel\'s own title', () => {
+    const entries = buildPostLinkWheel(MODULES, 'easyseo', '01-tema', 'cloudflare', PUBLISHED);
     expect(entries).toEqual([
-      { label: 'Versión en GitHub Pages', url: 'https://gh.easyleads.es/easyseo/01-tema/' },
+      { title: 'Tema GH', url: 'https://gh.easyleads.es/easyseo/01-tema/' },
+      { title: 'Tema BG', url: 'https://blogger.easyleads.es/2026/01/tema.html' },
     ]);
   });
 
-  it('includes the Blogger entry when the post has been published there', () => {
-    const published = {
-      'easyseo/01-tema': {
-        blogger_post_url: 'https://easy-leads.blogspot.com/2026/06/post.html',
-        blogger_post_id: '1',
-        content_hash: 'abc',
-      },
-    };
-    const entries = buildPostLinkWheel('easyseo', '01-tema', 'github', published);
-    expect(entries).toEqual([
-      { label: 'Versión en Cloudflare Pages', url: 'https://easyseo.easyleads.es/01-tema/' },
-      { label: 'Versión en Blogger', url: 'https://easy-leads.blogspot.com/2026/06/post.html' },
-    ]);
-  });
-
-  it('omits the Blogger entry when the post has not been published there', () => {
-    const entries = buildPostLinkWheel('arroba', '01-tema', 'cloudflare', {});
-    expect(entries.some((entry) => entry.label === 'Versión en Blogger')).toBe(false);
+  it('omits the Blogger entry when the post has not been published there yet', () => {
+    const entries = buildPostLinkWheel(MODULES, 'easyseo', '01-tema', 'cloudflare', {});
+    expect(entries).toEqual([{ title: 'Tema GH', url: 'https://gh.easyleads.es/easyseo/01-tema/' }]);
   });
 });
 
 describe('buildAllChannelLinks', () => {
-  it('returns the cloudflare and github variants when not published on Blogger', () => {
-    const entries = buildAllChannelLinks('easyseo', '01-tema', {});
+  it('includes every channel, none excluded', () => {
+    const entries = buildAllChannelLinks(MODULES, 'easyseo', '01-tema', PUBLISHED);
     expect(entries).toEqual([
-      { channel: 'cloudflare', channelLabel: 'Cloudflare Pages', url: 'https://easyseo.easyleads.es/01-tema/' },
-      { channel: 'github', channelLabel: 'GitHub Pages', url: 'https://gh.easyleads.es/easyseo/01-tema/' },
-    ]);
-  });
-
-  it('includes the Blogger variant when the post has been published there', () => {
-    const published = {
-      'easyseo/01-tema': {
-        blogger_post_url: 'https://easy-leads.blogspot.com/2026/06/post.html',
-        blogger_post_id: '1',
-        content_hash: 'abc',
-      },
-    };
-    const entries = buildAllChannelLinks('easyseo', '01-tema', published);
-    expect(entries).toEqual([
-      { channel: 'cloudflare', channelLabel: 'Cloudflare Pages', url: 'https://easyseo.easyleads.es/01-tema/' },
-      { channel: 'github', channelLabel: 'GitHub Pages', url: 'https://gh.easyleads.es/easyseo/01-tema/' },
-      { channel: 'blogger', channelLabel: 'Blogger', url: 'https://easy-leads.blogspot.com/2026/06/post.html' },
+      { title: 'Tema CF', url: 'https://easyseo.easyleads.es/01-tema/' },
+      { title: 'Tema GH', url: 'https://gh.easyleads.es/easyseo/01-tema/' },
+      { title: 'Tema BG', url: 'https://blogger.easyleads.es/2026/01/tema.html' },
     ]);
   });
 });

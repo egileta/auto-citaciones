@@ -17,18 +17,15 @@ PROJECTS_PATH = REPO_ROOT / "sites" / "src" / "data" / "projects.json"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 API_BASE = "https://www.googleapis.com/blogger/v3"
 
+# Bump when the HTML generated from a post's markdown/project data changes
+# (e.g. markdown_to_html or build_nap_html) without the source files
+# themselves changing, so already-published posts still get republished.
+TEMPLATE_VERSION = "3"
+
 
 def load_projects():
     projects = json.loads(PROJECTS_PATH.read_text(encoding="utf-8"))
     return {project["slug"]: project for project in projects}
-
-
-def cloudflare_post_url(project_slug, post_slug):
-    return f"https://{project_slug}.easyleads.es/{post_slug}/"
-
-
-def github_post_url(project_slug, post_slug):
-    return f"https://gh.easyleads.es/{project_slug}/{post_slug}/"
 
 
 def build_nap_html(project):
@@ -44,21 +41,38 @@ def build_nap_html(project):
     )
 
 
-def build_link_wheel_html(project, project_slug, post_slug, posts, published):
-    links = [
-        ("Versión en Cloudflare Pages", cloudflare_post_url(project_slug, post_slug)),
-        ("Versión en GitHub Pages", github_post_url(project_slug, post_slug)),
-    ]
-    current_post_id = f"{project_slug}/{post_slug}"
-    for other in posts:
-        if other["post_id"] == current_post_id or not other["post_id"].startswith(f"{project_slug}/"):
-            continue
-        entry = published.get(other["post_id"])
-        if entry:
-            links.append((other["title"], entry["blogger_post_url"]))
+def cloudflare_post_url(project_slug, post_slug):
+    return f"https://{project_slug}.easyleads.es/{post_slug}/"
 
-    items = "".join(f'<li><a href="{url}">{label}</a></li>' for label, url in links)
-    return f"<h3>Más sobre {project['name']}</h3><ul>{items}</ul>"
+
+def github_post_url(project_slug, post_slug):
+    return f"https://gh.easyleads.es/{project_slug}/{post_slug}/"
+
+
+def read_channel_title(project_slug, post_slug, channel):
+    path = POSTS_ROOT / project_slug / post_slug / f"{channel}.md"
+    if not path.exists():
+        return None
+    frontmatter, _ = parse_frontmatter(path.read_text(encoding="utf-8"))
+    return frontmatter.get("title")
+
+
+def build_link_wheel_html(project_slug, post_slug):
+    """Links to the Cloudflare/GitHub versions of this same post, using each
+    one's own (deliberately varied) title as anchor text — identical anchor
+    text across near-duplicate copies of an article is a link-scheme
+    signal, a real per-channel title isn't."""
+    links = []
+    cf_title = read_channel_title(project_slug, post_slug, "cloudflare")
+    if cf_title:
+        links.append((cf_title, cloudflare_post_url(project_slug, post_slug)))
+    gh_title = read_channel_title(project_slug, post_slug, "github")
+    if gh_title:
+        links.append((gh_title, github_post_url(project_slug, post_slug)))
+    if not links:
+        return ""
+    items = "".join(f'<li><a href="{url}">{title}</a></li>' for title, url in links)
+    return f"<ul>{items}</ul>"
 
 
 def get_access_token():
@@ -97,7 +111,10 @@ def find_blogger_posts(projects):
         frontmatter, body = parse_frontmatter(text)
         post_id = f"{project_slug}/{post_slug}"
         project = projects[project_slug]
-        hash_basis = text + json.dumps(project, sort_keys=True)
+        sibling_titles = (
+            read_channel_title(project_slug, post_slug, "cloudflare") or ""
+        ) + (read_channel_title(project_slug, post_slug, "github") or "")
+        hash_basis = text + json.dumps(project, sort_keys=True) + sibling_titles + TEMPLATE_VERSION
         content_hash = hashlib.sha256(hash_basis.encode("utf-8")).hexdigest()
         posts.append(
             {
@@ -185,7 +202,7 @@ def publish_posts(blog_id, access_token, posts, published, projects):
         html = (
             markdown_to_html(post["body_markdown"])
             + build_nap_html(project)
-            + build_link_wheel_html(project, post["project_slug"], post["post_slug"], posts, updated)
+            + build_link_wheel_html(post["project_slug"], post["post_slug"])
         )
         payload = {"title": post["title"], "content": html}
 

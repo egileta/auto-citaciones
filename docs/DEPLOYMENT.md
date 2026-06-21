@@ -36,18 +36,28 @@ dos veces por despliegue, una por `SITE_TARGET`:
 `https://gh.easyleads.es/easyseo/01-post/`) — sin `/blog/` ni doble
 prefijo del slug del proyecto.
 
-**Rueda de enlaces (link wheel):** cada post, en los tres canales, incluye
-tras su contenido los datos NAP+W del negocio y enlaces a las versiones del
-mismo post en los otros canales (`sites/src/lib/linkWheel.ts` →
-`buildPostLinkWheel()`, usada por `Post.astro`, excluye el canal actual;
-`build_nap_html`/`build_link_wheel_html` en `scripts/blogger_publish.py`
-para Blogger). La página raíz de cada proyecto
-(`sites/src/pages/[slug]/index.astro`) usa en cambio
-`buildAllChannelLinks()`: solo lista los posts **propios de ese
-proyecto** (nunca los de otros proyectos), cada uno repetido en sus tres
-variantes de canal — no excluye el canal actual, porque esta página no
-"es" ninguno de los tres en particular. Por cada post nuevo que se añada
-a un proyecto, aparecerán 3 enlaces más en su página raíz.
+**Rueda de enlaces (link wheel), con título real como anchor text:** cada
+post, en los tres canales, incluye tras su contenido los datos NAP+W del
+negocio y enlaces a las versiones del mismo post en los otros canales
+(`sites/src/lib/linkWheel.ts` → `buildPostLinkWheel()`, usada por
+`Post.astro`, excluye el canal actual; `build_link_wheel_html()` en
+`scripts/blogger_publish.py` para Blogger). La clave es que el texto del
+enlace **nunca** es una etiqueta de plataforma ("Versión en Cloudflare
+Pages") ni el mismo título con un sufijo ("Título (GitHub)") — es el
+**título real de esa versión concreta**, que se escribe deliberadamente
+distinto en cada `cloudflare.md`/`github.md`/`blogger.md` del mismo post.
+Varias copias casi idénticas de un artículo enlazándose entre sí con el
+mismo anchor text es la firma de un link scheme; con un título propio y
+distinto por versión, el enlace se lee como una referencia editorial
+normal, no como una red de enlaces.
+
+La página raíz de cada proyecto (`sites/src/pages/[slug]/index.astro`)
+usa en cambio `buildAllChannelLinks()`: solo lista los posts **propios de
+ese proyecto** (nunca los de otros proyectos), cada uno repetido en sus
+tres variantes de canal con su título real — no excluye el canal actual,
+porque esta página no "es" ninguno de los tres en particular. Por cada
+post nuevo que se añada a un proyecto, aparecerán hasta 3 enlaces más en
+su página raíz (menos si aún no está publicado en Blogger).
 
 El enlace a la versión de Blogger solo aparece una vez que el post ya se
 publicó allí y quedó registrado en `data/blogger_published.json`
@@ -63,8 +73,17 @@ segundo push. `if: always()` en esos dos jobs evita que un fallo de la
 API de Blogger bloquee el despliegue de los sitios estáticos.
 
 Cada post tiene **tres ficheros markdown distintos**
-(`cloudflare.md`, `github.md`, `blogger.md`) con redacción diferente para
-evitar contenido duplicado entre canales (penalización SEO).
+(`cloudflare.md`, `github.md`, `blogger.md`) con **título y redacción
+distintos** en cada uno, para evitar contenido duplicado entre canales
+(penalización SEO) y para que la rueda de enlaces tenga un anchor text
+real y variado en vez de uno genérico.
+
+En `scripts/blogger_publish.py`, `read_channel_title()` lee el `title` de
+los `cloudflare.md`/`github.md` hermanos del `blogger.md` que se está
+publicando — por eso el hash de contenido (`find_blogger_posts()`)
+incluye también esos dos títulos, no solo el texto del propio
+`blogger.md`: si cambias solo el título de `cloudflare.md`, el post de
+Blogger debe republicarse igualmente para actualizar el enlace.
 
 **Regla de contenido:** todo enlace de salida en estos markdown, y el campo
 `website` de `sites/src/data/projects.json`, deben apuntar al **dominio
@@ -314,15 +333,15 @@ accesibles.
 - `Citation.astro` (página raíz de cada subdominio) sigue esta estructura
   fija: h1 = `name`, h2 = `tagline`, párrafo = `description`, h3 "Últimas
   entradas en nuestro blog" + lista de enlaces **solo a los posts de este
-  proyecto**, fanned out en sus 3 canales (propio, GitHub, Blogger), y
-  **después** h3 "Nuestros perfiles en directorios especializados y redes
-  sociales" + lista de `sameAs`. El orden importa: los enlaces a blog van
-  antes que los perfiles.
+  proyecto**, fanned out en sus 3 canales (propio, GitHub, Blogger) con el
+  título real de cada versión, y **después** h3 "Nuestros perfiles en
+  directorios especializados y redes sociales" + lista de `sameAs`. El
+  orden importa: los enlaces a blog van antes que los perfiles.
 - Cada post (`sites/src/content/posts/<slug>/<post>/{cloudflare,github,blogger}.md`)
   debe enlazar, en su CTA final, al `website` real del proyecto. El NAP+W
-  y la rueda de enlaces a los otros canales/posts se añaden
-  automáticamente al renderizar (ver sección de arquitectura arriba) — no
-  hace falta escribirlos a mano en el markdown.
+  y la rueda de enlaces a los otros canales se añaden automáticamente al
+  renderizar (ver sección de arquitectura arriba) — no hace falta
+  escribirlos a mano en el markdown.
 
 ## 5. Verificación end-to-end tras cualquier cambio
 

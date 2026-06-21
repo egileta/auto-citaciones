@@ -1,5 +1,5 @@
 ---
-title: "Cómo elegir una agencia SEO local en Santurtzi"
+title: "Señales de alarma al contratar una agencia SEO en Bizkaia"
 date: "2026-06-20"
 project: "easyseo"
 ---
