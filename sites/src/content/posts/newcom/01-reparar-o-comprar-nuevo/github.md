@@ -11,4 +11,4 @@ equipo nuevo.
 En Newcom Bilbao (Uribarri) reparamos ordenadores y ofrecemos también
 equipos nuevos y reacondicionados para cuando la reparación ya no es la
 mejor opción. Toda la info en
-[newcom.easyleads.es](https://newcom.easyleads.es/).
+[newcombilbao.es](https://newcombilbao.es).

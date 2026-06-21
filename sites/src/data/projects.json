@@ -2,6 +2,7 @@
   {
     "slug": "easyseo",
     "subdomain": "easyseo.easyleads.es",
+    "website": "https://easyseo.es",
     "name": "Easy SEO",
     "description": "Servicios de agencia SEO especializados en captación de leads cualificados y rediseño web para potenciar el SEO local de tus principales servicios.",
     "nap": {
@@ -26,6 +27,7 @@
   {
     "slug": "newcom",
     "subdomain": "newcom.easyleads.es",
+    "website": "https://newcombilbao.es",
     "name": "Newcom Bilbao",
     "description": "Reparación de ordenadores, venta de PCs y portátiles nuevos y reacondicionados. Compra venta de juegos y videoconsolas, venta de merchandising gamer y friki.",
     "nap": {
@@ -44,6 +46,7 @@
   {
     "slug": "arroba",
     "subdomain": "arroba.easyleads.es",
+    "website": "https://arrobapc.es",
     "name": "Arroba PC",
     "description": "Informática y electrónica en el centro de Santurtzi junto al metro. Venta, reparación y asesoramiento en ordenadores, móviles y consolas. ¡Visítanos!",
     "nap": {

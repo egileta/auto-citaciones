@@ -22,7 +22,8 @@ const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
   <address>
     {project.nap.streetAddress}<br />
     {project.nap.postalCode} {project.nap.addressLocality}<br />
-    Tel: {project.nap.telephone}
+    Tel: {project.nap.telephone}<br />
+    Web: <a href={project.website}>{project.website}</a>
   </address>
   <ul>
     {project.sameAs.map((url) => (

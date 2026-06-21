@@ -11,4 +11,4 @@ ampliando RAM, por una fracción del precio de un equipo nuevo.
 En Newcom Bilbao, en Uribarri, reparamos ordenadores y también vendemos
 equipos nuevos y reacondicionados cuando la reparación ya no compensa. Pasa
 por la tienda o consulta en
-[newcom.easyleads.es](https://newcom.easyleads.es/).
+[newcombilbao.es](https://newcombilbao.es).

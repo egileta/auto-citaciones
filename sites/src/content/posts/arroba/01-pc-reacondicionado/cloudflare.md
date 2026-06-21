@@ -11,4 +11,4 @@ componentes originales no se hayan cambiado por piezas de menor calidad.
 En Arroba PC, junto al metro de Santurtzi, revisamos cada equipo antes de
 ponerlo en venta y también compramos y reparamos móviles y consolas. Pásate
 por la tienda o consulta en
-[arroba.easyleads.es](https://arroba.easyleads.es/).
+[arrobapc.es](https://arrobapc.es).

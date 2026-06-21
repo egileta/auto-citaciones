@@ -12,4 +12,4 @@ quien busca el servicio cerca de casa.
 En Easy SEO trabajamos la captación de leads cualificados combinando SEO
 local con un rediseño web orientado a conversión, no solo a tráfico. Si
 quieres revisar cómo está posicionado tu negocio en Santurtzi, puedes
-[contactar con Easy SEO](https://easyseo.easyleads.es/).
+[contactar con Easy SEO](https://easyseo.es).

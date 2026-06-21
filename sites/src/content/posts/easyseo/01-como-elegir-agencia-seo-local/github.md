@@ -11,4 +11,4 @@ quien busca el servicio cerca de casa.
 
 Easy SEO combina SEO local con rediseño web orientado a conversión para
 captar leads cualificados, no solo visitas. Más información en
-[easyseo.easyleads.es](https://easyseo.easyleads.es/).
+[easyseo.es](https://easyseo.es).

@@ -11,6 +11,7 @@ export interface ProjectNap {
 export interface Project {
   slug: string;
   subdomain: string;
+  website: string;
   name: string;
   description: string;
   nap: ProjectNap;

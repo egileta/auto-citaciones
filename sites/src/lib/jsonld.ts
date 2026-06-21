@@ -5,7 +5,8 @@ export function buildLocalBusinessJsonLd(project: Project, canonicalUrl: string)
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: project.name,
-    url: canonicalUrl,
+    url: project.website,
+    mainEntityOfPage: canonicalUrl,
     telephone: project.nap.telephone,
     description: project.description,
     address: {

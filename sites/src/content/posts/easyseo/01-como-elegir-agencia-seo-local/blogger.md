@@ -15,4 +15,4 @@ con SEO local y rediseño web orientado a conversión.
 Easy SEO — C. Jenaro Oraá Kalea, 3BIS, 2ºC, 48980 Santurtzi (Bizkaia).
 Teléfono: +34 695 50 19 79.
 
-Toda la información en [easyseo.easyleads.es](https://easyseo.easyleads.es/).
+Toda la información en [easyseo.es](https://easyseo.es).
