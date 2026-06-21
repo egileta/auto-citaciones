@@ -1,5 +1,11 @@
 const ROOT_DOMAIN = 'easyleads.es';
 
+// Rutas globales servidas igual en cualquier subdominio (no son páginas por
+// proyecto bajo /<slug>/), así que deben pasar sin reescribir o el fetch al
+// fichero /<slug>/sitemap.xml inexistente cae al fallback SPA de Cloudflare
+// Pages y devuelve el HTML de la home en vez del XML.
+const GLOBAL_PATHS = ['/sitemap.xml'];
+
 export interface HostRoutingRewrite {
   action: 'rewrite';
   path: string;
@@ -25,6 +31,8 @@ export function resolveHostRouting(
 
   const slug = hostname.slice(0, -suffix.length);
   if (!slugs.includes(slug)) return null;
+
+  if (GLOBAL_PATHS.includes(pathname)) return null;
 
   if (pathname === `/${slug}` || pathname.startsWith(`/${slug}/`)) {
     const stripped = pathname.slice(`/${slug}`.length) || '/';

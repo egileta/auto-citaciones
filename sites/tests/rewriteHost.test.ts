@@ -39,4 +39,8 @@ describe('resolveHostRouting', () => {
       path: '/',
     });
   });
+
+  it('does not rewrite the global sitemap.xml route', () => {
+    expect(resolveHostRouting('easyseo.easyleads.es', '/sitemap.xml', SLUGS)).toBeNull();
+  });
 });
