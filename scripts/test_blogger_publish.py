@@ -17,6 +17,25 @@ class MarkdownToHtmlTest(unittest.TestCase):
         html = markdown_to_html("Uno.\n\nDos.")
         self.assertEqual(html, "<p>Uno.</p><p>Dos.</p>")
 
+    def test_renders_unordered_list(self):
+        html = markdown_to_html("Intro.\n\n- Uno\n- Dos\n- Tres")
+        self.assertEqual(html, "<p>Intro.</p><ul><li>Uno</li><li>Dos</li><li>Tres</li></ul>")
+
+    def test_renders_image(self):
+        html = markdown_to_html("![Alt text](https://example.com/foto.jpg)")
+        self.assertEqual(html, '<p><img src="https://example.com/foto.jpg" alt="Alt text" loading="lazy"></p>')
+
+    def test_list_items_support_inline_markdown(self):
+        html = markdown_to_html("- **Negrita** y [enlace](https://example.com)")
+        self.assertEqual(
+            html,
+            '<ul><li><strong>Negrita</strong> y <a href="https://example.com">enlace</a></li></ul>',
+        )
+
+    def test_list_item_wrapped_across_lines_is_folded_into_one_item(self):
+        html = markdown_to_html("- Uno que\n  sigue en la siguiente línea\n- Dos")
+        self.assertEqual(html, "<ul><li>Uno que sigue en la siguiente línea</li><li>Dos</li></ul>")
+
 
 class PublishPostsTest(unittest.TestCase):
     PROJECTS = {

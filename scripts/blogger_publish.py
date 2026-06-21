@@ -123,15 +123,43 @@ def save_published(published):
 
 
 def inline_markdown_to_html(text):
+    text = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", r'<img src="\2" alt="\1" loading="lazy">', text)
     text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", text)
     return text
 
 
+def is_list_block(block):
+    lines = block.splitlines()
+    return bool(lines) and lines[0].lstrip().startswith(("- ", "* "))
+
+
+def split_list_items(block):
+    """Splits a list block into items, folding wrapped continuation lines
+    (lines that don't start a new '- '/'* ' item) into the previous item."""
+    items = []
+    for line in block.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("- ", "* ")):
+            items.append(stripped[2:].strip())
+        elif items:
+            items[-1] += " " + stripped
+    return items
+
+
+def block_to_html(block):
+    if is_list_block(block):
+        items = "".join(f"<li>{inline_markdown_to_html(item)}</li>" for item in split_list_items(block))
+        return f"<ul>{items}</ul>"
+    return f"<p>{inline_markdown_to_html(block)}</p>"
+
+
 def markdown_to_html(body_markdown):
-    paragraphs = [p.strip() for p in body_markdown.split("\n\n") if p.strip()]
-    return "".join(f"<p>{inline_markdown_to_html(p)}</p>" for p in paragraphs)
+    blocks = [b.strip() for b in body_markdown.split("\n\n") if b.strip()]
+    return "".join(block_to_html(b) for b in blocks)
 
 
 def request_with_backoff(method, url, **kwargs):

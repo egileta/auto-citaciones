@@ -281,9 +281,12 @@ Si esto ocurre:
 ### 3.5 Limitaciones del conversor markdown→HTML
 
 `markdown_to_html()` en `scripts/blogger_publish.py` es deliberadamente
-mínimo: soporta párrafos separados por línea en blanco, `[texto](url)` →
-`<a href>`, y `**negrita**`/`*cursiva*`. No soporta encabezados, listas ni
-markdown anidado — si se necesita más, ampliar `inline_markdown_to_html`.
+mínimo: soporta párrafos separados por línea en blanco, listas no
+ordenadas (líneas que empiezan por `- ` o `* `), `![alt](url)` →
+`<img>`, `[texto](url)` → `<a href>`, y `**negrita**`/`*cursiva*` (estos
+últimos también dentro de los `<li>`). No soporta encabezados ni markdown
+anidado (listas dentro de listas, etc.) — si se necesita más, ampliar
+`block_to_html`/`inline_markdown_to_html`.
 
 ### 3.6 Reintentos en `submit_indexnow.py`
 
