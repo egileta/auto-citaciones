@@ -8,6 +8,10 @@ project: "newcom"
 nuevo, merece la pena revisar si el problema se soluciona con un SSD o más
 RAM — suele ser mucho más barato que un equipo nuevo.
 
-Newcom Bilbao, en el barrio de Uribarri, repara ordenadores y también vende
-equipos nuevos y reacondicionados. Más detalles en
-[newcom.easyleads.es](https://newcom.easyleads.es/).
+**Newcom Bilbao**, en el barrio de Uribarri, repara ordenadores y también
+vende equipos nuevos y reacondicionados.
+
+Newcom Bilbao — Trauko Kalea, 24, Uribarri, 48007 Bilbao (Bizkaia).
+Teléfono: +34 944 46 65 98.
+
+Más detalles en [newcom.easyleads.es](https://newcom.easyleads.es/).

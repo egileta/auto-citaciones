@@ -74,9 +74,16 @@ def save_published(published):
     PUBLISHED_PATH.write_text(json.dumps(published, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def inline_markdown_to_html(text):
+    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", text)
+    return text
+
+
 def markdown_to_html(body_markdown):
     paragraphs = [p.strip() for p in body_markdown.split("\n\n") if p.strip()]
-    return "".join(f"<p>{p}</p>" for p in paragraphs)
+    return "".join(f"<p>{inline_markdown_to_html(p)}</p>" for p in paragraphs)
 
 
 def request_with_backoff(method, url, **kwargs):

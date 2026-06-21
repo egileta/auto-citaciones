@@ -48,7 +48,8 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
-          directory: sites/dist
+          workingDirectory: sites
+          directory: dist
 
   deploy-github:
     needs: validate
