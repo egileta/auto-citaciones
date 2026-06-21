@@ -3,12 +3,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { buildLocalBusinessJsonLd } from '../lib/jsonld';
 import type { Project } from '../lib/projects';
 
+export interface BlogLink {
+  title: string;
+  url: string;
+}
+
 interface Props {
   project: Project;
   canonicalUrl: string;
+  blogLinks: BlogLink[];
 }
 
-const { project, canonicalUrl } = Astro.props;
+const { project, canonicalUrl, blogLinks } = Astro.props;
 const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
 ---
 <BaseLayout
@@ -18,6 +24,7 @@ const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
   jsonLd={jsonLd}
 >
   <h1>{project.name}</h1>
+  <h2>{project.tagline}</h2>
   <p>{project.description}</p>
   <address>
     {project.nap.streetAddress}<br />
@@ -25,6 +32,13 @@ const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
     Tel: {project.nap.telephone}<br />
     Web: <a href={project.website}>{project.website}</a>
   </address>
+  <h3>Últimas entradas en nuestro blog</h3>
+  <ul>
+    {blogLinks.map((link) => (
+      <li><a href={link.url}>{link.title}</a></li>
+    ))}
+  </ul>
+  <h3>Nuestros perfiles en directorios especializados y redes sociales</h3>
   <ul>
     {project.sameAs.map((url) => (
       <li><a href={url} rel="me">{url}</a></li>

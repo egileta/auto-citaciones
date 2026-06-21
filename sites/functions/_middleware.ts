@@ -1,4 +1,4 @@
-import { rewritePathForHost } from '../src/lib/rewriteHost';
+import { resolveHostRouting } from '../src/lib/rewriteHost';
 import { getAllSlugs } from '../src/lib/projects';
 
 interface PagesEnv {
@@ -13,11 +13,18 @@ interface PagesContext {
 
 export const onRequest = async (context: PagesContext): Promise<Response> => {
   const url = new URL(context.request.url);
-  const newPath = rewritePathForHost(url.hostname, url.pathname, getAllSlugs());
+  const result = resolveHostRouting(url.hostname, url.pathname, getAllSlugs());
 
-  if (newPath) {
-    url.pathname = newPath;
-    return context.env.ASSETS.fetch(new Request(url.toString(), context.request));
+  if (result?.action === 'redirect') {
+    const target = new URL(url.toString());
+    target.pathname = result.path;
+    return Response.redirect(target.toString(), 301);
+  }
+
+  if (result?.action === 'rewrite') {
+    const target = new URL(url.toString());
+    target.pathname = result.path;
+    return context.env.ASSETS.fetch(new Request(target.toString(), context.request));
   }
 
   return context.next();

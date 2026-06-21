@@ -13,6 +13,7 @@ export interface Project {
   subdomain: string;
   website: string;
   name: string;
+  tagline: string;
   description: string;
   nap: ProjectNap;
   sameAs: string[];

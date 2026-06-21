@@ -8,7 +8,7 @@ describe('projects data loader', () => {
 
   it('finds a project by slug', () => {
     const project = getProjectBySlug('easyseo');
-    expect(project?.name).toBe('Easy SEO');
+    expect(project?.name).toBe('Agencia Easy SEO Local Vizcaya');
     expect(project?.nap.telephone).toBe('+34 695 50 19 79');
   });
 

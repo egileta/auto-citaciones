@@ -1,28 +1,42 @@
 import { describe, it, expect } from 'vitest';
-import { rewritePathForHost } from '../src/lib/rewriteHost';
+import { resolveHostRouting } from '../src/lib/rewriteHost';
 
 const SLUGS = ['easyseo', 'newcom', 'arroba'];
 
-describe('rewritePathForHost', () => {
+describe('resolveHostRouting', () => {
   it('rewrites the root path for a known subdomain', () => {
-    expect(rewritePathForHost('easyseo.easyleads.es', '/', SLUGS)).toBe('/easyseo/');
+    expect(resolveHostRouting('easyseo.easyleads.es', '/', SLUGS)).toEqual({
+      action: 'rewrite',
+      path: '/easyseo/',
+    });
   });
 
   it('rewrites a nested path for a known subdomain', () => {
-    expect(rewritePathForHost('easyseo.easyleads.es', '/blog/post-1', SLUGS)).toBe(
-      '/easyseo/blog/post-1'
-    );
+    expect(resolveHostRouting('easyseo.easyleads.es', '/01-post/', SLUGS)).toEqual({
+      action: 'rewrite',
+      path: '/easyseo/01-post/',
+    });
   });
 
   it('does not rewrite the root domain', () => {
-    expect(rewritePathForHost('easyleads.es', '/', SLUGS)).toBeNull();
+    expect(resolveHostRouting('easyleads.es', '/', SLUGS)).toBeNull();
   });
 
   it('does not rewrite an unknown subdomain', () => {
-    expect(rewritePathForHost('unknown.easyleads.es', '/', SLUGS)).toBeNull();
+    expect(resolveHostRouting('unknown.easyleads.es', '/', SLUGS)).toBeNull();
   });
 
-  it('does not double-prefix an already-prefixed path', () => {
-    expect(rewritePathForHost('easyseo.easyleads.es', '/easyseo/blog', SLUGS)).toBeNull();
+  it('redirects an already-prefixed path to its clean equivalent', () => {
+    expect(resolveHostRouting('easyseo.easyleads.es', '/easyseo/01-post/', SLUGS)).toEqual({
+      action: 'redirect',
+      path: '/01-post/',
+    });
+  });
+
+  it('redirects the bare prefixed slug to the subdomain root', () => {
+    expect(resolveHostRouting('easyseo.easyleads.es', '/easyseo', SLUGS)).toEqual({
+      action: 'redirect',
+      path: '/',
+    });
   });
 });

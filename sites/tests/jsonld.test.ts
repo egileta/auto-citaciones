@@ -8,7 +8,7 @@ describe('buildLocalBusinessJsonLd', () => {
     const jsonLd = buildLocalBusinessJsonLd(project, 'https://easyseo.easyleads.es');
 
     expect(jsonLd['@type']).toBe('LocalBusiness');
-    expect(jsonLd.name).toBe('Easy SEO');
+    expect(jsonLd.name).toBe('Agencia Easy SEO Local Vizcaya');
     expect(jsonLd.telephone).toBe('+34 695 50 19 79');
     expect((jsonLd.address as Record<string, unknown>).addressCountry).toBe('ES');
     expect(jsonLd.sameAs as string[]).toContain('https://www.linkedin.com/company/easy-seo-vizcaya');

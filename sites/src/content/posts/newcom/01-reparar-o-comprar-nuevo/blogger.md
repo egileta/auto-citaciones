@@ -11,7 +11,4 @@ RAM — suele ser mucho más barato que un equipo nuevo.
 **Newcom Bilbao**, en el barrio de Uribarri, repara ordenadores y también
 vende equipos nuevos y reacondicionados.
 
-Newcom Bilbao — Trauko Kalea, 24, Uribarri, 48007 Bilbao (Bizkaia).
-Teléfono: +34 944 46 65 98.
-
 Más detalles en [newcombilbao.es](https://newcombilbao.es).

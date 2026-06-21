@@ -19,27 +19,48 @@ class MarkdownToHtmlTest(unittest.TestCase):
 
 
 class PublishPostsTest(unittest.TestCase):
+    PROJECTS = {
+        "easyseo": {
+            "slug": "easyseo",
+            "name": "Agencia Easy SEO Local Vizcaya",
+            "website": "https://easyseo.example.com",
+            "nap": {
+                "streetAddress": "Calle Falsa 1",
+                "postalCode": "48001",
+                "addressLocality": "Bilbao",
+                "telephone": "+34600000000",
+            },
+        }
+    }
+
     def make_post(self, post_id="easyseo/01", content_hash="hash1"):
-        return {"post_id": post_id, "title": "T", "body_markdown": "Body", "content_hash": content_hash}
+        return {
+            "post_id": post_id,
+            "project_slug": "easyseo",
+            "post_slug": "01",
+            "title": "T",
+            "body_markdown": "Body",
+            "content_hash": content_hash,
+        }
 
     @patch("blogger_publish.request_with_backoff")
     def test_inserts_new_post(self, mock_request):
         mock_request.return_value = MagicMock(json=lambda: {"url": "https://blog/1", "id": "1"})
-        updated = publish_posts("blogid", "token", [self.make_post()], {})
+        updated = publish_posts("blogid", "token", [self.make_post()], {}, self.PROJECTS)
         self.assertIn("easyseo/01", updated)
         self.assertEqual(updated["easyseo/01"]["blogger_post_url"], "https://blog/1")
 
     @patch("blogger_publish.request_with_backoff")
     def test_updates_when_hash_changed(self, mock_request):
         published = {"easyseo/01": {"blogger_post_url": "u", "blogger_post_id": "1", "content_hash": "old"}}
-        updated = publish_posts("blogid", "token", [self.make_post(content_hash="new")], published)
+        updated = publish_posts("blogid", "token", [self.make_post(content_hash="new")], published, self.PROJECTS)
         self.assertEqual(updated["easyseo/01"]["content_hash"], "new")
         mock_request.assert_called_once()
 
     @patch("blogger_publish.request_with_backoff")
     def test_skips_when_hash_unchanged(self, mock_request):
         published = {"easyseo/01": {"blogger_post_url": "u", "blogger_post_id": "1", "content_hash": "hash1"}}
-        updated = publish_posts("blogid", "token", [self.make_post(content_hash="hash1")], published)
+        updated = publish_posts("blogid", "token", [self.make_post(content_hash="hash1")], published, self.PROJECTS)
         self.assertEqual(updated, published)
         mock_request.assert_not_called()
 

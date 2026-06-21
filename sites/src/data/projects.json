@@ -3,7 +3,8 @@
     "slug": "easyseo",
     "subdomain": "easyseo.easyleads.es",
     "website": "https://easyseo.es",
-    "name": "Easy SEO",
+    "name": "Agencia Easy SEO Local Vizcaya",
+    "tagline": "Agencia de SEO Local en Santurtzi, Bizkaia",
     "description": "Servicios de agencia SEO especializados en captación de leads cualificados y rediseño web para potenciar el SEO local de tus principales servicios.",
     "nap": {
       "streetAddress": "C. Jenaro Oraá Kalea, 3BIS, 2ºC",
@@ -28,7 +29,8 @@
     "slug": "newcom",
     "subdomain": "newcom.easyleads.es",
     "website": "https://newcombilbao.es",
-    "name": "Newcom Bilbao",
+    "name": "NEWCOM BILBAO",
+    "tagline": "Reparación y venta de ordenadores en Uribarri, Bilbao",
     "description": "Reparación de ordenadores, venta de PCs y portátiles nuevos y reacondicionados. Compra venta de juegos y videoconsolas, venta de merchandising gamer y friki.",
     "nap": {
       "streetAddress": "Trauko Kalea, 24, Uribarri",
@@ -47,7 +49,8 @@
     "slug": "arroba",
     "subdomain": "arroba.easyleads.es",
     "website": "https://arrobapc.es",
-    "name": "Arroba PC",
+    "name": "@ PC - Arroba PC Santurtzi",
+    "tagline": "Informática y electrónica en el centro de Santurtzi",
     "description": "Informática y electrónica en el centro de Santurtzi junto al metro. Venta, reparación y asesoramiento en ordenadores, móviles y consolas. ¡Visítanos!",
     "nap": {
       "streetAddress": "Juan XXIII Kalea, 5",

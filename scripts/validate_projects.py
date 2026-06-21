@@ -20,7 +20,7 @@ def validate_projects(projects):
 
     seen_slugs = set()
     for project in projects:
-        for field in ["slug", "subdomain", "name", "description", "nap", "sameAs"]:
+        for field in ["slug", "subdomain", "website", "name", "tagline", "description", "nap", "sameAs"]:
             if field not in project:
                 raise ValidationError(f"project missing required field '{field}': {project}")
 

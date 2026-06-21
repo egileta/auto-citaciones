@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import type { LoadedPost } from '../lib/posts';
+import { getProjectBySlug } from '../lib/projects';
+import { getSiteTarget } from '../lib/siteTarget';
+import { buildPostLinkWheel } from '../lib/linkWheel';
 
 interface Props {
   post: LoadedPost;
@@ -10,6 +13,8 @@ interface Props {
 }
 
 const { post, canonicalUrl, citationUrl, html } = Astro.props;
+const project = getProjectBySlug(post.projectSlug)!;
+const linkWheel = buildPostLinkWheel(post.projectSlug, post.postSlug, getSiteTarget());
 ---
 <BaseLayout
   title={post.frontmatter.title}
@@ -20,6 +25,23 @@ const { post, canonicalUrl, citationUrl, html } = Astro.props;
     <h1>{post.frontmatter.title}</h1>
     <time datetime={post.frontmatter.date}>{post.frontmatter.date}</time>
     <div set:html={html} />
-    <p><a href={citationUrl}>Volver a la página de {post.frontmatter.project}</a></p>
+    <p><a href={citationUrl}>Volver a la página de {project.name}</a></p>
   </article>
+  <address>
+    {project.name}<br />
+    {project.nap.streetAddress}<br />
+    {project.nap.postalCode} {project.nap.addressLocality}<br />
+    Tel: {project.nap.telephone}<br />
+    Web: <a href={project.website}>{project.website}</a>
+  </address>
+  {linkWheel.length > 0 && (
+    <>
+      <h2>Más sobre {project.name}</h2>
+      <ul>
+        {linkWheel.map((entry) => (
+          <li><a href={entry.url}>{entry.label}</a></li>
+        ))}
+      </ul>
+    </>
+  )}
 </BaseLayout>

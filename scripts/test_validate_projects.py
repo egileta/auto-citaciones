@@ -7,7 +7,9 @@ def base_project():
     return {
         "slug": "demo",
         "subdomain": "demo.easyleads.es",
+        "website": "https://demo.example.com",
         "name": "Demo",
+        "tagline": "Tagline de prueba",
         "description": "desc",
         "nap": {
             "streetAddress": "Calle 1",
@@ -31,6 +33,18 @@ class ValidateProjectsTest(unittest.TestCase):
     def test_missing_nap_field_fails(self):
         project = base_project()
         del project["nap"]["telephone"]
+        with self.assertRaises(ValidationError):
+            validate_projects([project])
+
+    def test_missing_website_fails(self):
+        project = base_project()
+        del project["website"]
+        with self.assertRaises(ValidationError):
+            validate_projects([project])
+
+    def test_missing_tagline_fails(self):
+        project = base_project()
+        del project["tagline"]
         with self.assertRaises(ValidationError):
             validate_projects([project])
 

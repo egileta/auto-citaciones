@@ -1,10 +1,10 @@
 ---
-import Post from '../../../../templates/Post.astro';
-import { loadPostsForTarget, type PostModule, type LoadedPost } from '../../../../lib/posts';
-import { getSiteTarget, getProjectBaseUrl } from '../../../../lib/siteTarget';
+import Post from '../../../templates/Post.astro';
+import { loadPostsForTarget, type PostModule, type LoadedPost } from '../../../lib/posts';
+import { getSiteTarget, getProjectBaseUrl } from '../../../lib/siteTarget';
 
 export async function getStaticPaths() {
-  const modules = import.meta.glob<PostModule>('../../../../content/posts/**/*.md', { eager: true });
+  const modules = import.meta.glob<PostModule>('../../../content/posts/**/*.md', { eager: true });
   const target = getSiteTarget();
   const loaded = loadPostsForTarget(modules, target);
   return loaded.map((post) => ({
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props as { post: LoadedPost };
 const html = await post.module.compiledContent();
-const canonicalUrl = `${getProjectBaseUrl(post.projectSlug)}/blog/${post.postSlug}/`;
+const canonicalUrl = `${getProjectBaseUrl(post.projectSlug)}/${post.postSlug}/`;
 const citationUrl = `${getProjectBaseUrl(post.projectSlug)}/`;
 ---
 <Post post={post} canonicalUrl={canonicalUrl} citationUrl={citationUrl} html={html} />
