@@ -38,13 +38,29 @@ prefijo del slug del proyecto.
 
 **Rueda de enlaces (link wheel):** cada post, en los tres canales, incluye
 tras su contenido los datos NAP+W del negocio y enlaces a las versiones del
-mismo post en los otros canales (`sites/src/lib/linkWheel.ts` para
-Cloudflare/GitHub vía `Post.astro`; `build_nap_html`/`build_link_wheel_html`
-en `scripts/blogger_publish.py` para Blogger). El enlace a la versión de
-Blogger solo aparece una vez que el post ya se publicó allí y quedó
-registrado en `data/blogger_published.json` (`sites/src/lib/blogPublished.ts`
-lee ese mismo fichero en tiempo de build) — en el primer despliegue de un
-post nuevo, ese enlace concreto aparecerá a partir del segundo build.
+mismo post en los otros canales (`sites/src/lib/linkWheel.ts` →
+`buildPostLinkWheel()`, usada por `Post.astro`, excluye el canal actual;
+`build_nap_html`/`build_link_wheel_html` en `scripts/blogger_publish.py`
+para Blogger). La página raíz de cada proyecto
+(`sites/src/pages/[slug]/index.astro`) usa en cambio
+`buildAllChannelLinks()`: solo lista los posts **propios de ese
+proyecto** (nunca los de otros proyectos), cada uno repetido en sus tres
+variantes de canal — no excluye el canal actual, porque esta página no
+"es" ninguno de los tres en particular. Por cada post nuevo que se añada
+a un proyecto, aparecerán 3 enlaces más en su página raíz.
+
+El enlace a la versión de Blogger solo aparece una vez que el post ya se
+publicó allí y quedó registrado en `data/blogger_published.json`
+(`sites/src/lib/blogPublished.ts` lee ese mismo fichero en tiempo de
+build). En `.github/workflows/deploy.yml`, los jobs `deploy-cloudflare` y
+`deploy-github` dependen de (`needs:`) `blogger-publish` y hacen
+`checkout` explícito de `ref: main` (en vez del SHA que disparó el
+workflow), de forma que si `blogger-publish` publicó el post y
+`git-auto-commit-action` ya actualizó `data/blogger_published.json` en
+`main`, el build recoge ese commit antes de generar las páginas: el
+enlace a Blogger aparece **desde el primer despliegue**, sin esperar a un
+segundo push. `if: always()` en esos dos jobs evita que un fallo de la
+API de Blogger bloquee el despliegue de los sitios estáticos.
 
 Cada post tiene **tres ficheros markdown distintos**
 (`cloudflare.md`, `github.md`, `blogger.md`) con redacción diferente para
@@ -269,6 +285,19 @@ mínimo: soporta párrafos separados por línea en blanco, `[texto](url)` →
 `<a href>`, y `**negrita**`/`*cursiva*`. No soporta encabezados, listas ni
 markdown anidado — si se necesita más, ampliar `inline_markdown_to_html`.
 
+### 3.6 Reintentos en `submit_indexnow.py`
+
+El job `submit-indexnow` (al final del workflow) llama a la API pública de
+IndexNow, que ha fallado alguna vez en CI con un error de conexión
+transitorio (`ConnectionError`/`RemoteDisconnected`, no un error HTTP).
+`submit_host()` reintenta con backoff exponencial (1s, 2s, 4s... hasta
+`max_attempts=5`) tanto en errores de conexión (`requests.exceptions.
+RequestException`) como en respuestas HTTP 429/500/502/503. Si se agotan
+los reintentos, `main()` captura el fallo, imprime un `WARNING` en stderr
+y termina con código 0 — un fallo de IndexNow nunca debe marcar el deploy
+como roto, porque no afecta a que los sitios estén publicados y
+accesibles.
+
 ## 4. Convención de contenido (los 3 canales)
 
 - `sites/src/data/projects.json` — cada proyecto necesita `slug`,
@@ -281,11 +310,11 @@ markdown anidado — si se necesita más, ampliar `inline_markdown_to_html`.
   `project.website`, nunca el subdominio de easyleads.es.
 - `Citation.astro` (página raíz de cada subdominio) sigue esta estructura
   fija: h1 = `name`, h2 = `tagline`, párrafo = `description`, h3 "Últimas
-  entradas en nuestro blog" + lista de enlaces a posts (de este proyecto y
-  de los otros, para indexabilidad cruzada), y **después** h3 "Nuestros
-  perfiles en directorios especializados y redes sociales" + lista de
-  `sameAs`. El orden importa: los enlaces a blog van antes que los
-  perfiles.
+  entradas en nuestro blog" + lista de enlaces **solo a los posts de este
+  proyecto**, fanned out en sus 3 canales (propio, GitHub, Blogger), y
+  **después** h3 "Nuestros perfiles en directorios especializados y redes
+  sociales" + lista de `sameAs`. El orden importa: los enlaces a blog van
+  antes que los perfiles.
 - Cada post (`sites/src/content/posts/<slug>/<post>/{cloudflare,github,blogger}.md`)
   debe enlazar, en su CTA final, al `website` real del proyecto. El NAP+W
   y la rueda de enlaces a los otros canales/posts se añaden

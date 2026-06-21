@@ -28,53 +28,6 @@ jobs:
         env:
           SITE_TARGET: github
 
-  deploy-cloudflare:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npm ci
-        working-directory: sites
-      - run: npm run build
-        working-directory: sites
-        env:
-          SITE_TARGET: cloudflare
-          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
-      - uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
-          workingDirectory: sites
-          directory: dist
-
-  deploy-github:
-    needs: validate
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npm ci
-        working-directory: sites
-      - run: npm run build
-        working-directory: sites
-        env:
-          SITE_TARGET: github
-      - run: echo "gh.easyleads.es" > sites/dist/CNAME
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: sites/dist
-      - uses: actions/deploy-pages@v4
-
   blogger-publish:
     needs: validate
     runs-on: ubuntu-latest
@@ -96,6 +49,67 @@ jobs:
         with:
           commit_message: "chore: update blogger_published.json"
           file_pattern: data/blogger_published.json
+
+  # Runs after blogger-publish (not in parallel with it) and re-checks out
+  # `main` instead of the triggering commit, so that if blogger-publish just
+  # committed a new data/blogger_published.json (e.g. a post published on
+  # Blogger for the first time), this build already sees that URL and the
+  # link wheel includes the Blogger link on the very first deploy instead of
+  # only from the next push onwards. `if: always()` keeps deploys unblocked
+  # even if blogger-publish itself failed (e.g. a transient Blogger API
+  # error) — the static sites must not depend on Blogger being reachable.
+  deploy-cloudflare:
+    needs: blogger-publish
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: sites
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: cloudflare
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+      - uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+          workingDirectory: sites
+          directory: dist
+
+  deploy-github:
+    needs: blogger-publish
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: sites
+      - run: npm run build
+        working-directory: sites
+        env:
+          SITE_TARGET: github
+      - run: echo "gh.easyleads.es" > sites/dist/CNAME
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sites/dist
+      - uses: actions/deploy-pages@v4
 
   submit-indexnow:
     needs: [deploy-cloudflare, deploy-github, blogger-publish]

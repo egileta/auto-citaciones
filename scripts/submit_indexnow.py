@@ -2,6 +2,7 @@
 """Pings IndexNow for a list of changed URLs, grouped by host."""
 import os
 import sys
+import time
 from urllib.parse import urlparse
 
 import requests
@@ -17,14 +18,29 @@ def group_urls_by_host(urls):
     return groups
 
 
-def submit_host(host, urls, key):
-    resp = requests.post(
-        INDEXNOW_ENDPOINT,
-        json={"host": host, "key": key, "urlList": urls},
-        timeout=30,
-    )
-    resp.raise_for_status()
-    return resp.status_code
+def submit_host(host, urls, key, max_attempts=5):
+    delay = 1
+    for attempt in range(max_attempts):
+        try:
+            resp = requests.post(
+                INDEXNOW_ENDPOINT,
+                json={"host": host, "key": key, "urlList": urls},
+                timeout=30,
+            )
+        except requests.exceptions.RequestException:
+            if attempt == max_attempts - 1:
+                raise
+            time.sleep(delay)
+            delay *= 2
+            continue
+
+        if resp.status_code in (429, 500, 502, 503) and attempt < max_attempts - 1:
+            time.sleep(delay)
+            delay *= 2
+            continue
+
+        resp.raise_for_status()
+        return resp.status_code
 
 
 def submit_all(urls, key):
@@ -48,6 +64,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except requests.HTTPError as exc:
+    except requests.exceptions.RequestException as exc:
         print(f"WARNING: IndexNow submission failed: {exc}", file=sys.stderr)
         sys.exit(0)
