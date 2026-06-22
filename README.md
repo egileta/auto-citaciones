@@ -15,7 +15,10 @@ contenido duplicado entre subdominios y penalizaciones SEO.
 Documentación completa de la infraestructura y cómo reproducirla:
 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Para arrancar el proyecto en un
 equipo nuevo (stack local, credenciales), ver
-[`docs/SETUP.md`](docs/SETUP.md).
+[`docs/SETUP.md`](docs/SETUP.md). Para escribir un post nuevo siguiendo el
+mismo patrón que los existentes (título y redacción distintos por canal,
+listas, imagen, límites del markdown de Blogger), ver
+[`docs/CONTENT.md`](docs/CONTENT.md).
 
 ## Estructura
 
