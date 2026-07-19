@@ -2,15 +2,16 @@
 
 Sitio Astro multi-proyecto que publica citaciones locales (NAP) y posts de
 apoyo SEO para varios negocios (`easyseo`, `newcom`, `arroba`) a través de
-tres canales independientes:
+cuatro canales independientes:
 
 1. **Cloudflare Pages** — un subdominio por proyecto bajo `easyleads.es`.
 2. **GitHub Pages** — hub único en `gh.easyleads.es` con una ruta por proyecto.
 3. **Blogger** — posts de apoyo publicados vía API en `blogger.easyleads.es`.
+4. **Tumblr** — posts de apoyo publicados vía API en el blog de Tumblr.
 
-Los tres canales reciben **contenido distinto por proyecto y por canal**
-(`cloudflare.md`, `github.md`, `blogger.md` por cada post) para evitar
-contenido duplicado entre subdominios y penalizaciones SEO.
+Los cuatro canales reciben **contenido distinto por proyecto y por canal**
+(`cloudflare.md`, `github.md`, `blogger.md`, `tumblr.md` por cada post) para
+evitar contenido duplicado entre subdominios y penalizaciones SEO.
 
 Documentación completa de la infraestructura y cómo reproducirla:
 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Para arrancar el proyecto en un
@@ -25,25 +26,29 @@ listas, imagen, límites del markdown de Blogger), ver
 ```
 sites/                          Proyecto Astro (output: static)
   src/data/projects.json        NAP + web original de cada negocio
-  src/content/posts/<slug>/<post>/{cloudflare,github,blogger}.md
+  src/content/posts/<slug>/<post>/{cloudflare,github,blogger,tumblr}.md
   src/lib/siteTarget.ts         URLs por SITE_TARGET (cloudflare|github)
   src/lib/rewriteHost.ts        Reescritura host -> /<slug>/, o redirect 301
                                  si la petición llega con el path ya prefijado
   src/lib/linkWheel.ts          Enlaces cruzados entre canales, con el título
                                  real de cada versión como anchor text
   src/lib/blogPublished.ts      Lee data/blogger_published.json en build time
+  src/lib/tumblrPublished.ts    Lee data/tumblr_published.json en build time
   functions/_middleware.ts      Cloudflare Pages Function que aplica esa reescritura
 data/blogger_published.json    Registro slug/post -> URL de Blogger (idempotencia)
+data/tumblr_published.json     Registro slug/post -> URL de Tumblr (idempotencia)
 scripts/
   validate_projects.py          Valida projects.json en CI
   blogger_publish.py            Publica/actualiza posts en Blogger vía API
                                  (añade NAP+W y rueda de enlaces con título real)
+  tumblr_publish.py             Publica/actualiza posts en Tumblr vía API
+                                 (mismo patrón que blogger_publish.py)
   submit_indexnow.py            Notifica las URLs a IndexNow tras el deploy
-.github/workflows/deploy.yml    CI/CD: valida, construye y despliega los 3 canales
+.github/workflows/deploy.yml    CI/CD: valida, construye y despliega los 4 canales
 ```
 
-Las URLs de posts son planas en los 3 canales (`<base>/<post-slug>/`, sin
-`/blog/`). Cada post enlaza a sus copias en los otros canales, pero con
+Las URLs de posts son planas en Cloudflare y GitHub (`<base>/<post-slug>/`,
+sin `/blog/`). Cada post enlaza a sus copias en los otros canales, pero con
 el **título real y distinto** de cada versión como anchor text, nunca con
 una etiqueta de plataforma — varias copias de un artículo enlazándose
 entre sí con el mismo anchor text sí es la firma de un link scheme; con

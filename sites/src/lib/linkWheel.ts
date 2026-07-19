@@ -1,5 +1,6 @@
 import { getProjectBaseUrl, type SiteTarget } from './siteTarget';
 import { bloggerPublished, type BloggerPublishedEntry } from './blogPublished';
+import { tumblrPublished, type TumblrPublishedEntry } from './tumblrPublished';
 import { parsePostPath, type PostModule } from './posts';
 
 export interface LinkWheelEntry {
@@ -7,7 +8,7 @@ export interface LinkWheelEntry {
   url: string;
 }
 
-type Channel = 'cloudflare' | 'github' | 'blogger';
+type Channel = 'cloudflare' | 'github' | 'blogger' | 'tumblr';
 
 function findChannelModules(
   modules: Record<string, PostModule>,
@@ -34,7 +35,8 @@ function buildChannelLinks(
   projectSlug: string,
   postSlug: string,
   targets: SiteTarget[],
-  published: Record<string, BloggerPublishedEntry>
+  bloggerEntries: Record<string, BloggerPublishedEntry>,
+  tumblrEntries: Record<string, TumblrPublishedEntry>
 ): LinkWheelEntry[] {
   const channelModules = findChannelModules(modules, projectSlug, postSlug);
   const entries: LinkWheelEntry[] = [];
@@ -49,9 +51,15 @@ function buildChannelLinks(
   }
 
   const bloggerModule = channelModules.blogger;
-  const bloggerEntry = published[`${projectSlug}/${postSlug}`];
+  const bloggerEntry = bloggerEntries[`${projectSlug}/${postSlug}`];
   if (bloggerModule && bloggerEntry) {
     entries.push({ title: bloggerModule.frontmatter.title, url: bloggerEntry.blogger_post_url });
+  }
+
+  const tumblrModule = channelModules.tumblr;
+  const tumblrEntry = tumblrEntries[`${projectSlug}/${postSlug}`];
+  if (tumblrModule && tumblrEntry) {
+    entries.push({ title: tumblrModule.frontmatter.title, url: tumblrEntry.tumblr_post_url });
   }
 
   return entries;
@@ -63,10 +71,11 @@ export function buildPostLinkWheel(
   projectSlug: string,
   postSlug: string,
   currentTarget: SiteTarget,
-  published: Record<string, BloggerPublishedEntry> = bloggerPublished
+  bloggerEntries: Record<string, BloggerPublishedEntry> = bloggerPublished,
+  tumblrEntries: Record<string, TumblrPublishedEntry> = tumblrPublished
 ): LinkWheelEntry[] {
   const otherTargets = (['cloudflare', 'github'] as SiteTarget[]).filter((t) => t !== currentTarget);
-  return buildChannelLinks(modules, projectSlug, postSlug, otherTargets, published);
+  return buildChannelLinks(modules, projectSlug, postSlug, otherTargets, bloggerEntries, tumblrEntries);
 }
 
 /** Used by the citation root page: links to all channels' versions of a post (the page itself isn't any one channel's article). */
@@ -74,7 +83,8 @@ export function buildAllChannelLinks(
   modules: Record<string, PostModule>,
   projectSlug: string,
   postSlug: string,
-  published: Record<string, BloggerPublishedEntry> = bloggerPublished
+  bloggerEntries: Record<string, BloggerPublishedEntry> = bloggerPublished,
+  tumblrEntries: Record<string, TumblrPublishedEntry> = tumblrPublished
 ): LinkWheelEntry[] {
-  return buildChannelLinks(modules, projectSlug, postSlug, ['cloudflare', 'github'], published);
+  return buildChannelLinks(modules, projectSlug, postSlug, ['cloudflare', 'github'], bloggerEntries, tumblrEntries);
 }

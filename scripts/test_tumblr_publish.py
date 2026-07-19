@@ -3,8 +3,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-import blogger_publish
-from blogger_publish import (
+import tumblr_publish
+from tumblr_publish import (
     build_link_wheel_html,
     markdown_to_html,
     parse_frontmatter,
@@ -30,21 +30,6 @@ class MarkdownToHtmlTest(unittest.TestCase):
         html = markdown_to_html("Intro.\n\n- Uno\n- Dos\n- Tres")
         self.assertEqual(html, "<p>Intro.</p><ul><li>Uno</li><li>Dos</li><li>Tres</li></ul>")
 
-    def test_renders_image(self):
-        html = markdown_to_html("![Alt text](https://example.com/foto.jpg)")
-        self.assertEqual(html, '<p><img src="https://example.com/foto.jpg" alt="Alt text" loading="lazy"></p>')
-
-    def test_list_items_support_inline_markdown(self):
-        html = markdown_to_html("- **Negrita** y [enlace](https://example.com)")
-        self.assertEqual(
-            html,
-            '<ul><li><strong>Negrita</strong> y <a href="https://example.com">enlace</a></li></ul>',
-        )
-
-    def test_list_item_wrapped_across_lines_is_folded_into_one_item(self):
-        html = markdown_to_html("- Uno que\n  sigue en la siguiente línea\n- Dos")
-        self.assertEqual(html, "<ul><li>Uno que sigue en la siguiente línea</li><li>Dos</li></ul>")
-
 
 class LinkWheelTest(unittest.TestCase):
     def setUp(self):
@@ -59,7 +44,11 @@ class LinkWheelTest(unittest.TestCase):
             '---\ntitle: "Título en GitHub"\ndate: "2026-01-01"\nproject: "easyseo"\n---\nGH\n',
             encoding="utf-8",
         )
-        patcher = patch.object(blogger_publish, "POSTS_ROOT", Path(self.tmpdir.name))
+        (post_dir / "blogger.md").write_text(
+            '---\ntitle: "Título en Blogger"\ndate: "2026-01-01"\nproject: "easyseo"\n---\nBL\n',
+            encoding="utf-8",
+        )
+        patcher = patch.object(tumblr_publish, "POSTS_ROOT", Path(self.tmpdir.name))
         patcher.start()
         self.addCleanup(patcher.stop)
         self.addCleanup(self.tmpdir.cleanup)
@@ -69,25 +58,20 @@ class LinkWheelTest(unittest.TestCase):
         self.assertEqual(read_channel_title("easyseo", "01-tema", "github"), "Título en GitHub")
 
     def test_read_channel_title_returns_none_when_missing(self):
-        self.assertIsNone(read_channel_title("easyseo", "01-tema", "blogger"))
+        self.assertIsNone(read_channel_title("easyseo", "01-tema", "tumblr"))
 
-    def test_link_wheel_uses_each_channels_own_title_as_anchor_text(self):
-        html = build_link_wheel_html("easyseo", "01-tema", tumblr_published={})
+    def test_link_wheel_omits_blogger_when_not_yet_published(self):
+        html = build_link_wheel_html("easyseo", "01-tema", blogger_published={})
         self.assertEqual(
             html,
             '<ul><li><a href="https://easyseo.easyleads.es/01-tema/">Título en Cloudflare</a></li>'
             '<li><a href="https://gh.easyleads.es/easyseo/01-tema/">Título en GitHub</a></li></ul>',
         )
 
-    def test_link_wheel_includes_tumblr_once_published(self):
-        post_dir = Path(blogger_publish.POSTS_ROOT) / "easyseo" / "01-tema"
-        (post_dir / "tumblr.md").write_text(
-            '---\ntitle: "Título en Tumblr"\ndate: "2026-01-01"\nproject: "easyseo"\n---\nTB\n',
-            encoding="utf-8",
-        )
-        published = {"easyseo/01-tema": {"tumblr_post_url": "https://easyleads.tumblr.com/post/1"}}
-        html = build_link_wheel_html("easyseo", "01-tema", tumblr_published=published)
-        self.assertIn('<a href="https://easyleads.tumblr.com/post/1">Título en Tumblr</a>', html)
+    def test_link_wheel_includes_blogger_once_published(self):
+        published = {"easyseo/01-tema": {"blogger_post_url": "https://blogger.example.com/1"}}
+        html = build_link_wheel_html("easyseo", "01-tema", blogger_published=published)
+        self.assertIn('<a href="https://blogger.example.com/1">Título en Blogger</a>', html)
 
 
 class PublishPostsTest(unittest.TestCase):
@@ -115,24 +99,31 @@ class PublishPostsTest(unittest.TestCase):
             "content_hash": content_hash,
         }
 
-    @patch("blogger_publish.request_with_backoff")
+    @patch("tumblr_publish.request_with_backoff")
     def test_inserts_new_post(self, mock_request):
-        mock_request.return_value = MagicMock(json=lambda: {"url": "https://blog/1", "id": "1"})
-        updated = publish_posts("blogid", "token", [self.make_post()], {}, self.PROJECTS)
+        mock_request.return_value = MagicMock(json=lambda: {"response": {"id": 123456789012}})
+        updated = publish_posts("easyleads.tumblr.com", None, [self.make_post()], {}, self.PROJECTS, {})
         self.assertIn("easyseo/01", updated)
-        self.assertEqual(updated["easyseo/01"]["blogger_post_url"], "https://blog/1")
+        self.assertEqual(
+            updated["easyseo/01"]["tumblr_post_url"], "https://easyleads.tumblr.com/post/123456789012"
+        )
+        self.assertEqual(updated["easyseo/01"]["tumblr_post_id"], "123456789012")
 
-    @patch("blogger_publish.request_with_backoff")
+    @patch("tumblr_publish.request_with_backoff")
     def test_updates_when_hash_changed(self, mock_request):
-        published = {"easyseo/01": {"blogger_post_url": "u", "blogger_post_id": "1", "content_hash": "old"}}
-        updated = publish_posts("blogid", "token", [self.make_post(content_hash="new")], published, self.PROJECTS)
+        published = {"easyseo/01": {"tumblr_post_url": "u", "tumblr_post_id": "1", "content_hash": "old"}}
+        updated = publish_posts(
+            "easyleads.tumblr.com", None, [self.make_post(content_hash="new")], published, self.PROJECTS, {}
+        )
         self.assertEqual(updated["easyseo/01"]["content_hash"], "new")
         mock_request.assert_called_once()
 
-    @patch("blogger_publish.request_with_backoff")
+    @patch("tumblr_publish.request_with_backoff")
     def test_skips_when_hash_unchanged(self, mock_request):
-        published = {"easyseo/01": {"blogger_post_url": "u", "blogger_post_id": "1", "content_hash": "hash1"}}
-        updated = publish_posts("blogid", "token", [self.make_post(content_hash="hash1")], published, self.PROJECTS)
+        published = {"easyseo/01": {"tumblr_post_url": "u", "tumblr_post_id": "1", "content_hash": "hash1"}}
+        updated = publish_posts(
+            "easyleads.tumblr.com", None, [self.make_post(content_hash="hash1")], published, self.PROJECTS, {}
+        )
         self.assertEqual(updated, published)
         mock_request.assert_not_called()
 

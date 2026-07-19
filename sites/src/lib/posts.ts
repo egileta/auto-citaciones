@@ -1,11 +1,11 @@
 export interface ParsedPostPath {
   projectSlug: string;
   postSlug: string;
-  channel: 'cloudflare' | 'github' | 'blogger';
+  channel: 'cloudflare' | 'github' | 'blogger' | 'tumblr';
 }
 
 export function parsePostPath(path: string): ParsedPostPath | null {
-  const match = path.match(/content\/posts\/([^/]+)\/([^/]+)\/(cloudflare|github|blogger)\.md$/);
+  const match = path.match(/content\/posts\/([^/]+)\/([^/]+)\/(cloudflare|github|blogger|tumblr)\.md$/);
   if (!match) return null;
   const [, projectSlug, postSlug, channel] = match;
   return { projectSlug, postSlug, channel: channel as ParsedPostPath['channel'] };

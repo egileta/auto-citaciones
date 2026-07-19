@@ -80,7 +80,8 @@ ninguna credencial** — todo el despliegue real lo hace CI con los secrets
 que ya están en GitHub.
 
 Si vas a ejecutar en local `scripts/blogger_publish.py`,
-`scripts/submit_indexnow.py` o `scripts/cf_create_subdomain.py`:
+`scripts/tumblr_publish.py`, `scripts/submit_indexnow.py`,
+`scripts/cf_create_subdomain.py` o `scripts/generate_content.py`:
 
 ```bash
 cp .env.example .env.local
@@ -107,6 +108,9 @@ tendrás que regenerarlos:
 - Refresh token de Blogger: repetir el flujo OAuth manual de
   `docs/DEPLOYMENT.md` 3.2. El client ID/secret de Google Cloud sí siguen
   siendo válidos, no hace falta recrearlos.
+- OAuth token/token secret de Tumblr: repetir el flujo de
+  `docs/DEPLOYMENT.md` 4.1 (Explore API en la página de la app). El
+  Consumer Key/Secret siguen siendo válidos, no hace falta recrear la app.
 - Si decides usar tokens/refresh token nuevos, actualiza también el secret
   correspondiente en GitHub (`gh secret set NOMBRE_SECRET`) para que CI siga
   funcionando.

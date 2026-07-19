@@ -1,9 +1,10 @@
-# Despliegue de los 3 canales — runbook
+# Despliegue de los 4 canales — runbook
 
-Este documento describe cómo está montada la infraestructura de los tres
-canales de publicación (Cloudflare Pages, GitHub Pages, Blogger) y los pasos
-exactos para reproducirla desde cero. Incluye, al final, los errores reales
-con los que nos topamos la primera vez y su causa, para no repetirlos.
+Este documento describe cómo está montada la infraestructura de los cuatro
+canales de publicación (Cloudflare Pages, GitHub Pages, Blogger, Tumblr) y
+los pasos exactos para reproducirla desde cero. Incluye, al final, los
+errores reales con los que nos topamos la primera vez y su causa, para no
+repetirlos.
 
 ## Arquitectura
 
@@ -30,6 +31,11 @@ dos veces por despliegue, una por `SITE_TARGET`:
   en GitHub Pages bajo el dominio propio `gh.easyleads.es`.
 - **Blogger**: no usa el build de Astro. `scripts/blogger_publish.py` lee
   directamente los `*/*/blogger.md` y los publica vía API.
+- **Tumblr**: tampoco usa el build de Astro, mismo patrón que Blogger.
+  `scripts/tumblr_publish.py` lee los `*/*/tumblr.md` y los publica vía API
+  (OAuth 1.0a, endpoint legacy `/v2/blog/{blog}/post`). Limitación conocida:
+  las URLs de Tumblr incluyen el ID numérico del post
+  (`https://<blog>/post/<id>`), no hay endpoint para asignar un slug legible.
 
 **URLs de posts:** en los tres canales un post vive en
 `<base>/<post-slug>/` (p.ej. `https://easyseo.easyleads.es/01-post/`,
@@ -37,53 +43,58 @@ dos veces por despliegue, una por `SITE_TARGET`:
 prefijo del slug del proyecto.
 
 **Rueda de enlaces (link wheel), con título real como anchor text:** cada
-post, en los tres canales, incluye tras su contenido los datos NAP+W del
+post, en los cuatro canales, incluye tras su contenido los datos NAP+W del
 negocio y enlaces a las versiones del mismo post en los otros canales
 (`sites/src/lib/linkWheel.ts` → `buildPostLinkWheel()`, usada por
 `Post.astro`, excluye el canal actual; `build_link_wheel_html()` en
-`scripts/blogger_publish.py` para Blogger). La clave es que el texto del
-enlace **nunca** es una etiqueta de plataforma ("Versión en Cloudflare
-Pages") ni el mismo título con un sufijo ("Título (GitHub)") — es el
-**título real de esa versión concreta**, que se escribe deliberadamente
-distinto en cada `cloudflare.md`/`github.md`/`blogger.md` del mismo post.
-Varias copias casi idénticas de un artículo enlazándose entre sí con el
-mismo anchor text es la firma de un link scheme; con un título propio y
-distinto por versión, el enlace se lee como una referencia editorial
-normal, no como una red de enlaces.
+`scripts/blogger_publish.py` y en `scripts/tumblr_publish.py` para Blogger y
+Tumblr respectivamente). La clave es que el texto del enlace **nunca** es
+una etiqueta de plataforma ("Versión en Cloudflare Pages") ni el mismo
+título con un sufijo ("Título (GitHub)") — es el **título real de esa
+versión concreta**, que se escribe deliberadamente distinto en cada
+`cloudflare.md`/`github.md`/`blogger.md`/`tumblr.md` del mismo post. Varias
+copias casi idénticas de un artículo enlazándose entre sí con el mismo
+anchor text es la firma de un link scheme; con un título propio y distinto
+por versión, el enlace se lee como una referencia editorial normal, no como
+una red de enlaces.
 
 La página raíz de cada proyecto (`sites/src/pages/[slug]/index.astro`)
 usa en cambio `buildAllChannelLinks()`: solo lista los posts **propios de
 ese proyecto** (nunca los de otros proyectos), cada uno repetido en sus
-tres variantes de canal con su título real — no excluye el canal actual,
-porque esta página no "es" ninguno de los tres en particular. Por cada
-post nuevo que se añada a un proyecto, aparecerán hasta 3 enlaces más en
-su página raíz (menos si aún no está publicado en Blogger).
+cuatro variantes de canal con su título real — no excluye el canal actual,
+porque esta página no "es" ninguno de los cuatro en particular. Por cada
+post nuevo que se añada a un proyecto, aparecerán hasta 4 enlaces más en
+su página raíz (menos los que aún no estén publicados en Blogger/Tumblr).
 
-El enlace a la versión de Blogger solo aparece una vez que el post ya se
-publicó allí y quedó registrado en `data/blogger_published.json`
-(`sites/src/lib/blogPublished.ts` lee ese mismo fichero en tiempo de
-build). En `.github/workflows/deploy.yml`, los jobs `deploy-cloudflare` y
-`deploy-github` dependen de (`needs:`) `blogger-publish` y hacen
-`checkout` explícito de `ref: main` (en vez del SHA que disparó el
-workflow), de forma que si `blogger-publish` publicó el post y
-`git-auto-commit-action` ya actualizó `data/blogger_published.json` en
-`main`, el build recoge ese commit antes de generar las páginas: el
-enlace a Blogger aparece **desde el primer despliegue**, sin esperar a un
-segundo push. `if: always()` en esos dos jobs evita que un fallo de la
-API de Blogger bloquee el despliegue de los sitios estáticos.
+El enlace a la versión de Blogger (o de Tumblr) solo aparece una vez que el
+post ya se publicó allí y quedó registrado en `data/blogger_published.json`
+(o `data/tumblr_published.json`) — `sites/src/lib/blogPublished.ts` y
+`sites/src/lib/tumblrPublished.ts` leen esos ficheros en tiempo de build.
+En `.github/workflows/deploy.yml`, los jobs `deploy-cloudflare` y
+`deploy-github` dependen de (`needs:`) `blogger-publish` y `tumblr-publish`,
+y hacen `checkout` explícito de `ref: main` (en vez del SHA que disparó el
+workflow), de forma que si esos jobs publicaron el post y
+`git-auto-commit-action` ya actualizó el fichero de tracking en `main`, el
+build recoge ese commit antes de generar las páginas: el enlace aparece
+**desde el primer despliegue**, sin esperar a un segundo push. `if: always()`
+en esos dos jobs evita que un fallo de la API de Blogger o de Tumblr
+bloquee el despliegue de los sitios estáticos.
 
-Cada post tiene **tres ficheros markdown distintos**
-(`cloudflare.md`, `github.md`, `blogger.md`) con **título y redacción
-distintos** en cada uno, para evitar contenido duplicado entre canales
-(penalización SEO) y para que la rueda de enlaces tenga un anchor text
-real y variado en vez de uno genérico.
+Cada post tiene **cuatro ficheros markdown distintos**
+(`cloudflare.md`, `github.md`, `blogger.md`, `tumblr.md`) con **título y
+redacción distintos** en cada uno, para evitar contenido duplicado entre
+canales (penalización SEO) y para que la rueda de enlaces tenga un anchor
+text real y variado en vez de uno genérico.
 
-En `scripts/blogger_publish.py`, `read_channel_title()` lee el `title` de
-los `cloudflare.md`/`github.md` hermanos del `blogger.md` que se está
-publicando — por eso el hash de contenido (`find_blogger_posts()`)
-incluye también esos dos títulos, no solo el texto del propio
-`blogger.md`: si cambias solo el título de `cloudflare.md`, el post de
-Blogger debe republicarse igualmente para actualizar el enlace.
+En `scripts/blogger_publish.py` y `scripts/tumblr_publish.py`,
+`read_channel_title()` lee el `title` de los ficheros hermanos del que se
+está publicando — por eso el hash de contenido (`find_blogger_posts()` /
+`find_tumblr_posts()`) incluye también esos títulos, no solo el texto del
+propio fichero: si cambias solo el título de `cloudflare.md`, el post de
+Blogger y el de Tumblr deben republicarse igualmente para actualizar el
+enlace. `blogger_publish.py` y `tumblr_publish.py` también se leen el
+`_published.json` del otro canal para enlazarse entre sí una vez ambos
+estén publicados.
 
 **Regla de contenido:** todo enlace de salida en estos markdown, y el campo
 `website` de `sites/src/data/projects.json`, deben apuntar al **dominio
@@ -320,7 +331,74 @@ y termina con código 0 — un fallo de IndexNow nunca debe marcar el deploy
 como roto, porque no afecta a que los sitios estén publicados y
 accesibles.
 
-## 4. Convención de contenido (los 3 canales)
+## 4. Tumblr
+
+### 4.0 Crear el blog (manual, una sola vez)
+
+Igual que con Blogger, **la API de Tumblr no crea blogs** — hay que crear
+el blog a mano una vez desde la interfaz antes de automatizar nada:
+
+1. Si no hay cuenta de Tumblr, crearla en <https://www.tumblr.com/register>.
+2. Dentro de la cuenta, crear un blog nuevo (menú de cuenta → "Crear un
+   nuevo blog" / icono "+"). El nombre elegido fija el hostname
+   (`<nombre>.tumblr.com`) — si el nombre obvio ya está cogido, probar
+   variantes (`easyleadses`, `easyleads-es`, etc.). Ese hostname completo
+   es el valor de `TUMBLR_BLOG_IDENTIFIER` (sección 4.2).
+3. No hace falta configurar tema, título ni nada más del blog — solo que
+   exista, para que la API pueda publicar posts en él.
+
+### 4.1 Registrar la app y obtener credenciales OAuth 1.0a
+
+1. Crear una app en <https://www.tumblr.com/oauth/apps> — da un
+   **Consumer Key** y un **Consumer Secret**.
+2. Tumblr usa OAuth 1.0a para publicar en nombre de un usuario (no hay
+   endpoint de creación de posts en OAuth2). El registro de la app incluye
+   un "Explore API" que permite generar directamente un **OAuth Token** y
+   **OAuth Token Secret** para tu propia cuenta sin implementar el
+   three-legged handshake completo — es el atajo recomendado para un blog
+   propio (equivalente al flujo manual que ya se usa para el refresh token
+   de Blogger).
+3. El blog de destino se identifica por su hostname completo, p.ej.
+   `easyleads.tumblr.com` (o el dominio personalizado si el blog tiene uno
+   configurado) — el mismo que se creó en el paso 4.0.
+
+### 4.2 Secrets de GitHub
+
+- `TUMBLR_BLOG_IDENTIFIER`
+- `TUMBLR_CONSUMER_KEY`
+- `TUMBLR_CONSUMER_SECRET`
+- `TUMBLR_OAUTH_TOKEN`
+- `TUMBLR_OAUTH_TOKEN_SECRET`
+
+### 4.3 Mismo punto crítico que Blogger: permiso de escritura para el tracking file
+
+`scripts/tumblr_publish.py` guarda en `data/tumblr_published.json` qué
+posts ya se publicaron (por `content_hash`), igual que
+`blogger_publish.py`. El job `tumblr-publish` necesita:
+
+```yaml
+tumblr-publish:
+  permissions:
+    contents: write
+```
+
+Si este push falla, Tumblr ya habrá publicado los posts pero el tracking
+file seguirá vacío, y el siguiente run los duplicará — mismo procedimiento
+de recuperación que en 3.4, pero contra la API de Tumblr
+(`GET /v2/blog/{blog}/posts` para localizar duplicados,
+`POST /v2/blog/{blog}/post/delete` con el `id` para borrarlos).
+
+### 4.4 Endpoint legacy, no NPF
+
+`tumblr_publish.py` usa el endpoint legacy `type=text` (`POST
+/v2/blog/{blog}/post` para crear, `POST /v2/blog/{blog}/post/edit` para
+editar), no el formato NPF (Neue Post Format) más reciente — sigue soportado
+y es más simple para contenido puramente HTML como el que generan
+`markdown_to_html()`/`build_nap_html()`/`build_link_wheel_html()`. La
+respuesta de creación solo trae el `id` numérico del post, no una URL
+completa; la URL se construye como `https://<blog_identifier>/post/<id>`.
+
+## 5. Convención de contenido (los 4 canales)
 
 - `sites/src/data/projects.json` — cada proyecto necesita `slug`,
   `subdomain`, `website` (dominio real del negocio), `name` (razón social
@@ -333,17 +411,17 @@ accesibles.
 - `Citation.astro` (página raíz de cada subdominio) sigue esta estructura
   fija: h1 = `name`, h2 = `tagline`, párrafo = `description`, h3 "Últimas
   entradas en nuestro blog" + lista de enlaces **solo a los posts de este
-  proyecto**, fanned out en sus 3 canales (propio, GitHub, Blogger) con el
-  título real de cada versión, y **después** h3 "Nuestros perfiles en
-  directorios especializados y redes sociales" + lista de `sameAs`. El
+  proyecto**, fanned out en sus 4 canales (propio, GitHub, Blogger, Tumblr)
+  con el título real de cada versión, y **después** h3 "Nuestros perfiles
+  en directorios especializados y redes sociales" + lista de `sameAs`. El
   orden importa: los enlaces a blog van antes que los perfiles.
-- Cada post (`sites/src/content/posts/<slug>/<post>/{cloudflare,github,blogger}.md`)
+- Cada post (`sites/src/content/posts/<slug>/<post>/{cloudflare,github,blogger,tumblr}.md`)
   debe enlazar, en su CTA final, al `website` real del proyecto. El NAP+W
   y la rueda de enlaces a los otros canales se añaden automáticamente al
   renderizar (ver sección de arquitectura arriba) — no hace falta
   escribirlos a mano en el markdown.
 
-## 5. Verificación end-to-end tras cualquier cambio
+## 6. Verificación end-to-end tras cualquier cambio
 
 ```bash
 # Cloudflare — cada subdominio debe mostrar su propio contenido
@@ -354,6 +432,9 @@ curl -I https://gh.easyleads.es/
 
 # Blogger — el enlace debe ser un <a href> real, no texto markdown
 curl -s <url-del-post> | grep -o '<a href="[^"]*">[^<]*</a>'
+
+# Tumblr — mismo chequeo
+curl -s <url-del-post-en-tumblr> | grep -o '<a href="[^"]*">[^<]*</a>'
 
 # CI
 gh run list -R <owner>/<repo> -L 1
