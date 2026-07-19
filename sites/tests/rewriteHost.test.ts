@@ -43,4 +43,8 @@ describe('resolveHostRouting', () => {
   it('does not rewrite the global sitemap.xml route', () => {
     expect(resolveHostRouting('easyseo.easyleads.es', '/sitemap.xml', SLUGS)).toBeNull();
   });
+
+  it('does not rewrite the global robots.txt route', () => {
+    expect(resolveHostRouting('easyseo.easyleads.es', '/robots.txt', SLUGS)).toBeNull();
+  });
 });
