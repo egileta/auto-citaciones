@@ -50,13 +50,22 @@ jobs:
           commit_message: "chore: update blogger_published.json"
           file_pattern: data/blogger_published.json
 
+  # needs: blogger-publish (not parallel with it) so the two jobs don't both
+  # try to git-commit-and-push data/*_published.json to `main` at the same
+  # time — the second push loses the race with a non-fast-forward rejection.
+  # `ref: main` on checkout picks up blogger-publish's commit (if any)
+  # before this job makes its own. `if: always()` keeps this job unblocked
+  # even if blogger-publish itself failed.
   tumblr-publish:
-    needs: validate
+    needs: [validate, blogger-publish]
+    if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
