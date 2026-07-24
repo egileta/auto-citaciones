@@ -89,6 +89,22 @@ cp .env.example .env.local
 # fichero y docs/DEPLOYMENT.md para cómo obtener cada uno)
 ```
 
+**Ya existe un `.env.local` en esta máquina** (creado 2026-07-19) con
+`CLOUDFLARE_DNS_TOKEN` + `CLOUDFLARE_ZONE_ID` (verificados y activos) y las
+5 credenciales de Tumblr (en producción, funcionando). Antes de pedirle
+estas credenciales al usuario otra vez, comprobar primero si `.env.local`
+ya las tiene:
+
+```bash
+cat .env.local  # o: grep -v '^#' .env.local | grep -v '^$'
+```
+
+Los campos de Blogger y del token de Pages de Cloudflare siguen vacíos
+(son secrets de GitHub Actions de solo escritura, sus valores reales nunca
+se han visto en una sesión de Claude Code — solo existen dentro de GitHub).
+Si hace falta ejecutarlos en local, hay que regenerarlos siguiendo
+`docs/DEPLOYMENT.md` y rellenar el fichero.
+
 `.env.local` está en `.gitignore` — nunca se commitea. Antes de ejecutar
 un script, carga las variables en el shell:
 

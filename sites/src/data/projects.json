@@ -63,5 +63,61 @@
       "https://www.facebook.com/PCSanturtzi",
       "https://www.instagram.com/arrobapcsanturtzi"
     ]
+  },
+  {
+    "slug": "erpopensource",
+    "subdomain": "erpopensource.easyleads.es",
+    "website": "https://opensourceerp.org",
+    "name": "Open Source ERP Tryton",
+    "tagline": "ERP de código abierto, adaptable y sin licencias",
+    "description": "Información y recursos sobre Tryton, plataforma ERP de código abierto (GPL-3.0) mantenida por la Tryton Foundation, sin coste de licencia y adaptable a sectores como logística o facturación electrónica.",
+    "nap": {
+      "streetAddress": "Promenade des Jardins d'Eau, 26/2",
+      "addressLocality": "Liège",
+      "postalCode": "4000",
+      "addressCountry": "BE",
+      "telephone": ""
+    },
+    "sameAs": [
+      "https://www.tryton.org",
+      "https://github.com/tryton"
+    ]
+  },
+  {
+    "slug": "fotobizkaia",
+    "subdomain": "fotobizkaia.easyleads.es",
+    "website": "https://xn--fotobarrea-19a.com",
+    "name": "Foto Barreña Bizkaia",
+    "tagline": "Fotografía de bodas en Bilbao y Bizkaia",
+    "description": "Estudio de fotografía en Santurtzi especializado en reportajes de boda en Bilbao y Bizkaia, tratando cada boda como un proyecto propio y personalizado.",
+    "nap": {
+      "streetAddress": "Sabino Arana Kalea, 9",
+      "addressLocality": "Santurtzi",
+      "postalCode": "48980",
+      "addressCountry": "ES",
+      "telephone": "+34 944 83 12 86"
+    },
+    "sameAs": [
+      "https://www.facebook.com/fotobarrena"
+    ]
+  },
+  {
+    "slug": "pasteleriasanturtzi",
+    "subdomain": "pasteleriasanturtzi.easyleads.es",
+    "website": "https://pasteleriasanturtzi.com",
+    "name": "Pastelería Atenea Santurtzi",
+    "tagline": "Pastelería, panadería y chocolatería en el centro de Santurtzi",
+    "description": "Pastelería de barrio en el centro de Santurtzi con pastelería, panadería, chocolatería y golosinas, conocida entre otras cosas por su palmera de chocolate.",
+    "nap": {
+      "streetAddress": "C. Jenaro Oraá Kalea, 1",
+      "addressLocality": "Santurtzi",
+      "postalCode": "48980",
+      "addressCountry": "ES",
+      "telephone": "+34 946 07 74 35"
+    },
+    "sameAs": [
+      "https://www.instagram.com/atenea.pasteleria",
+      "https://www.facebook.com/pastelesatenea"
+    ]
   }
 ]

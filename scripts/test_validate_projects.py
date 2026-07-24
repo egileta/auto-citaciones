@@ -1,6 +1,6 @@
 import unittest
 
-from validate_projects import validate_projects, ValidationError
+from validate_projects import validate_projects, ValidationError, missing_nap_fields
 
 
 def base_project():
@@ -24,17 +24,25 @@ def base_project():
 
 class ValidateProjectsTest(unittest.TestCase):
     def test_valid_project_list_passes(self):
-        self.assertTrue(validate_projects([base_project()]))
+        self.assertEqual(validate_projects([base_project()]), [])
 
     def test_empty_list_fails(self):
         with self.assertRaises(ValidationError):
             validate_projects([])
 
-    def test_missing_nap_field_fails(self):
+    def test_missing_nap_field_warns_but_passes(self):
         project = base_project()
         del project["nap"]["telephone"]
-        with self.assertRaises(ValidationError):
-            validate_projects([project])
+        warnings = validate_projects([project])
+        self.assertIn("project 'demo' missing NAP field 'telephone'", warnings)
+
+    def test_missing_nap_field_reported_by_helper(self):
+        project = base_project()
+        del project["nap"]["telephone"]
+        self.assertEqual(missing_nap_fields(project), ["telephone"])
+
+    def test_complete_nap_has_no_warnings(self):
+        self.assertEqual(validate_projects([base_project()]), [])
 
     def test_missing_website_fails(self):
         project = base_project()

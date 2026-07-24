@@ -28,6 +28,26 @@ jobs:
         env:
           SITE_TARGET: github
 
+  # Registers each project's subdomain as a Cloudflare Pages custom domain
+  # (idempotent — skips ones that already exist). Previously this was a
+  # manual, easy-to-forget step run locally by whoever set up a new project;
+  # wiring it into CI means a new project's subdomain goes live on the same
+  # push that adds it to projects.json, no manual follow-up required.
+  cf-subdomains:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/cf_create_subdomain.py
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+
   blogger-publish:
     needs: validate
     runs-on: ubuntu-latest
@@ -155,11 +175,16 @@ jobs:
           python-version: "3.12"
       - run: pip install -r scripts/requirements.txt
       - run: |
-          python scripts/submit_indexnow.py \
-            https://easyleads.es/ \
-            https://easyseo.easyleads.es/ \
-            https://newcom.easyleads.es/ \
-            https://arroba.easyleads.es/ \
-            https://gh.easyleads.es/
+          # Built from projects.json instead of a hardcoded list — a
+          # hardcoded list silently stops pinging new subdomains the moment
+          # someone adds a project and forgets to update this step.
+          urls=$(python -c "
+          import json
+          projects = json.load(open('sites/src/data/projects.json'))
+          urls = ['https://easyleads.es/', 'https://gh.easyleads.es/']
+          urls += [f'https://{p[\"subdomain\"]}/' for p in projects]
+          print(' '.join(urls))
+          ")
+          python scripts/submit_indexnow.py $urls
         env:
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
