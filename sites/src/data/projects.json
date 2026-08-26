@@ -102,6 +102,22 @@
     ]
   },
   {
+    "slug": "amalau",
+    "subdomain": "amalau.easyleads.es",
+    "website": "https://amalau.es",
+    "name": "Amalau",
+    "tagline": "Directorio de casas rurales y agroturismos en Euskadi",
+    "description": "Directorio de casas rurales, agroturismos y caseríos tradicionales en Bizkaia, Gipuzkoa y Araba, nacido de una casa rural propia en Zeanuri para ayudar a encontrar el alojamiento rural adecuado en cada comarca vasca.",
+    "nap": {
+      "streetAddress": "Barrio Ipinaburu, 48",
+      "addressLocality": "Zeanuri",
+      "postalCode": "48144",
+      "addressCountry": "ES",
+      "telephone": "+34 695 50 19 79"
+    },
+    "sameAs": []
+  },
+  {
     "slug": "pasteleriasanturtzi",
     "subdomain": "pasteleriasanturtzi.easyleads.es",
     "website": "https://pasteleriasanturtzi.com",

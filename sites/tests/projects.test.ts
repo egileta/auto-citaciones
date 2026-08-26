@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { projects, getProjectBySlug, getAllSlugs } from '../src/lib/projects';
 
 describe('projects data loader', () => {
-  it('loads exactly 6 projects', () => {
-    expect(projects).toHaveLength(6);
+  it('loads exactly 7 projects', () => {
+    expect(projects).toHaveLength(7);
   });
 
   it('finds a project by slug', () => {
@@ -23,6 +23,7 @@ describe('projects data loader', () => {
       'arroba',
       'erpopensource',
       'fotobizkaia',
+      'amalau',
       'pasteleriasanturtzi',
     ]);
   });
