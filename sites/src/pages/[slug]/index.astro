@@ -3,7 +3,7 @@ import Citation from '../../templates/Citation.astro';
 import { projects, getAllSlugs } from '../../lib/projects';
 import { getProjectBaseUrl, getSiteTarget } from '../../lib/siteTarget';
 import { loadPostsForTarget, type PostModule } from '../../lib/posts';
-import { buildAllChannelLinks } from '../../lib/linkWheel';
+import { buildOwnChannelLinks, buildPostLinkWheel } from '../../lib/linkWheel';
 
 export function getStaticPaths() {
   return getAllSlugs().map((slug) => ({ params: { slug } }));
@@ -19,6 +19,11 @@ const posts = loadPostsForTarget(modules, target)
   .filter((post) => post.projectSlug === slug)
   .sort((a, b) => b.frontmatter.date.localeCompare(a.frontmatter.date));
 
-const blogLinks = posts.flatMap((post) => buildAllChannelLinks(modules, post.projectSlug, post.postSlug));
+const blogLinks = posts.flatMap((post) => buildOwnChannelLinks(modules, post.projectSlug, post.postSlug, target));
+
+const directoryLinks = [
+  ...posts.flatMap((post) => buildPostLinkWheel(modules, post.projectSlug, post.postSlug, target)),
+  ...project.sameAs.map((url) => ({ title: url, url })),
+];
 ---
-<Citation project={project} canonicalUrl={canonicalUrl} blogLinks={blogLinks} />
+<Citation project={project} canonicalUrl={canonicalUrl} blogLinks={blogLinks} directoryLinks={directoryLinks} />

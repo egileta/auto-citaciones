@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPostLinkWheel, buildAllChannelLinks } from '../src/lib/linkWheel';
+import { buildPostLinkWheel, buildAllChannelLinks, buildOwnChannelLinks } from '../src/lib/linkWheel';
 
 const MODULES = {
   '/x/content/posts/easyseo/01-tema/cloudflare.md': {
@@ -49,6 +49,13 @@ describe('buildPostLinkWheel', () => {
   it('omits the Blogger and Tumblr entries when the post has not been published there yet', () => {
     const entries = buildPostLinkWheel(MODULES, 'easyseo', '01-tema', 'cloudflare', {}, {});
     expect(entries).toEqual([{ title: 'Tema GH', url: 'https://gh.easyleads.es/easyseo/01-tema/' }]);
+  });
+});
+
+describe('buildOwnChannelLinks', () => {
+  it('returns only the current target\'s own post link', () => {
+    const entries = buildOwnChannelLinks(MODULES, 'easyseo', '01-tema', 'cloudflare');
+    expect(entries).toEqual([{ title: 'Tema CF', url: 'https://easyseo.easyleads.es/01-tema/' }]);
   });
 });
 

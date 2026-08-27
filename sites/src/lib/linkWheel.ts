@@ -65,6 +65,18 @@ function buildChannelLinks(
   return entries;
 }
 
+/** Used by the citation root page: this channel's own post link only ("Últimas entradas"). */
+export function buildOwnChannelLinks(
+  modules: Record<string, PostModule>,
+  projectSlug: string,
+  postSlug: string,
+  currentTarget: SiteTarget
+): LinkWheelEntry[] {
+  const module = findChannelModules(modules, projectSlug, postSlug)[currentTarget];
+  if (!module) return [];
+  return [{ title: module.frontmatter.title, url: `${getProjectBaseUrl(projectSlug, currentTarget)}/${postSlug}/` }];
+}
+
 /** Used by the post page: links to the *other* channels' versions, excluding the current one. */
 export function buildPostLinkWheel(
   modules: Record<string, PostModule>,

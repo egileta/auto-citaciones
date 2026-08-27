@@ -115,7 +115,13 @@
       "addressCountry": "ES",
       "telephone": "+34 695 50 19 79"
     },
-    "sameAs": []
+    "sameAs": [
+      "https://www.tripadvisor.es/Hotel_Review-g1078936-d1436958-Reviews-Agroturismo_Amalau-Zeanuri_Province_of_Vizcaya_Basque_Country.html",
+      "https://www.facebook.com/p/Agroturismo-Amalau-100057787564402/",
+      "https://www.espaciorural.com/casa-rural/bizkaia/664/amalau",
+      "https://www.clubrural.com/casa-rural/vizcaya/zeanuri/amalau-casa-rural_136013",
+      "https://www.guiarural.com/es/amalau/1-1-1-cr1561.html"
+    ]
   },
   {
     "slug": "pasteleriasanturtzi",

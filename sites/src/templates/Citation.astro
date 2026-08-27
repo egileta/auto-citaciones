@@ -12,9 +12,10 @@ interface Props {
   project: Project;
   canonicalUrl: string;
   blogLinks: BlogLink[];
+  directoryLinks: BlogLink[];
 }
 
-const { project, canonicalUrl, blogLinks } = Astro.props;
+const { project, canonicalUrl, blogLinks, directoryLinks } = Astro.props;
 const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
 ---
 <BaseLayout
@@ -40,8 +41,8 @@ const jsonLd = buildLocalBusinessJsonLd(project, canonicalUrl);
   </ul>
   <h3>Nuestros perfiles en directorios especializados y redes sociales</h3>
   <ul>
-    {project.sameAs.map((url) => (
-      <li><a href={url} rel="me">{url}</a></li>
+    {directoryLinks.map((link) => (
+      <li><a href={link.url} rel="me">{link.title}</a></li>
     ))}
   </ul>
 </BaseLayout>
